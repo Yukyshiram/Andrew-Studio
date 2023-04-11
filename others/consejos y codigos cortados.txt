@@ -1,0 +1,37 @@
+<script type="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="codigo.js"></script>
+
+este se utiliza para que aparezca Biblioteca en la parte de arriba
+    <?php require 'parciales/header.php' ?>
+
+fondo 2
+ <a href='https://.pngtree.com/free-backgrounds'>fotos de fondo gratis de .pngtree.com/</a>
+
+
+ video reimu
+ /*<video width="320" height="240" autoplay
+ controls>
+   <source src="reimu.mp4" type:"video/mp4">
+ </video>*/
+
+
+nunca ingresar fetch_array() eso ya no se usa, ahora es
+fetch(PDO::FETCH_ASSOC)
+
+.container__tittle{
+  grid-column-start: 1;
+  grid-column-end: 5;
+
+ponerle estilo a la etiqueta <p>
+p{
+  font-family: 'Lora', serif;
+  font-size: 20px;
+  font-weight: normal;
+  text-align: left;
+  line-height: 30px;
+  text-decoration: none;
+  text-transform: lowercase;
+  letter-spacing: normal;
+  word-spacing: 20px;
+  text-shadow: 10px;
+}
