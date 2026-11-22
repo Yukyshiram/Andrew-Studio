@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AdminUserRequest;
 use App\Models\AuditEvent;
+use App\Models\LibraryPolicy;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,6 +31,8 @@ class UserController extends Controller
     public function store(AdminUserRequest $request): RedirectResponse
     {
         DB::transaction(function () use ($request): void {
+            LibraryPolicy::lockForUpdate()->findOrFail(1);
+            Gate::forUser(User::findOrFail($request->user()->id))->authorize('create', User::class);
             $user = User::create($request->safe()->only(['name', 'email', 'password', 'role']));
             AuditEvent::record('user.created', $user, ['role' => $user->role]);
         });
@@ -40,8 +43,10 @@ class UserController extends Controller
     public function update(AdminUserRequest $request, User $user): RedirectResponse
     {
         DB::transaction(function () use ($request, $user): void {
+            LibraryPolicy::lockForUpdate()->findOrFail(1);
             $admins = User::where('role', 'admin')->lockForUpdate()->get(['id']);
             $target = User::whereKey($user->id)->lockForUpdate()->firstOrFail();
+            Gate::forUser(User::findOrFail($request->user()->id))->authorize('update', $target);
             if ($target->isAdmin() && $request->validated('role') !== 'admin' && $admins->count() <= 1) {
                 throw ValidationException::withMessages(['role' => 'Debe conservarse al menos una cuenta administradora activa.']);
             }
@@ -57,8 +62,10 @@ class UserController extends Controller
     {
         Gate::authorize('delete', $user);
         DB::transaction(function () use ($user): void {
+            LibraryPolicy::lockForUpdate()->findOrFail(1);
             $admins = User::where('role', 'admin')->lockForUpdate()->get(['id']);
             $target = User::whereKey($user->id)->lockForUpdate()->firstOrFail();
+            Gate::forUser(User::findOrFail(auth()->id()))->authorize('delete', $target);
             if ($target->isAdmin() && $admins->count() <= 1) {
                 throw ValidationException::withMessages(['user' => 'Debe conservarse al menos una cuenta administradora activa.']);
             }

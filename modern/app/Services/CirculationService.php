@@ -24,6 +24,7 @@ class CirculationService
     public function requestBook(User $actor, int $bookId): CirculationRequest
     {
         return $this->mutate(function (LibraryPolicy $policy) use ($actor, $bookId): CirculationRequest {
+            abort_unless(User::whereKey($actor->id)->exists(), 403);
             $member = Member::where('user_id', $actor->id)->firstOrFail();
             $book = Book::findOrFail($bookId);
             $key = $member->id.':'.$book->id;
@@ -49,6 +50,7 @@ class CirculationService
         $this->staff($actor);
 
         return $this->mutate(function (LibraryPolicy $policy) use ($actor, $requestId): CirculationRequest {
+            $this->staff($actor);
             $request = CirculationRequest::with('member')->findOrFail($requestId);
             if ($request->status === 'ready') {
                 return $request;
@@ -75,6 +77,7 @@ class CirculationService
         $this->staff($actor);
 
         return $this->mutate(function (LibraryPolicy $policy) use ($actor, $requestId): Loan {
+            $this->staff($actor);
             $request = CirculationRequest::with('member')->findOrFail($requestId);
             if ($request->status === 'fulfilled') {
                 return Loan::where('circulation_request_id', $requestId)->firstOrFail();
@@ -118,6 +121,7 @@ class CirculationService
         }
 
         return $this->mutate(function (LibraryPolicy $policy) use ($actor, $loanId, $condition): Loan {
+            $this->staff($actor);
             $loan = Loan::findOrFail($loanId);
             if ($loan->status !== 'active') {
                 if ($loan->returned_condition === $condition) {
@@ -144,6 +148,7 @@ class CirculationService
     public function cancel(User $actor, int $requestId): CirculationRequest
     {
         return $this->mutate(function (LibraryPolicy $policy) use ($actor, $requestId): CirculationRequest {
+            $actor = User::findOrFail($actor->id);
             $request = CirculationRequest::with('member')->findOrFail($requestId);
             abort_unless($request->member->user_id === $actor->id || $actor->canManageBooks(), 404);
             if ($request->status === 'cancelled') {
@@ -166,6 +171,7 @@ class CirculationService
         }
 
         return $this->mutate(function (LibraryPolicy $policy) use ($actor, $requestId, $reason): CirculationRequest {
+            $this->staff($actor);
             $request = CirculationRequest::findOrFail($requestId);
             if ($request->status === 'rejected' && $request->decision_reason === $reason) {
                 return $request;
@@ -236,8 +242,9 @@ class CirculationService
 
     private function staff(User $actor): void
     {
-        abort_if($actor->trashed(), 403);
-        Gate::forUser($actor)->authorize('circulate');
+        $fresh = User::find($actor->id);
+        abort_unless($fresh !== null, 403);
+        Gate::forUser($fresh)->authorize('circulate');
     }
 
     private function audit(string $action, Model $subject, User $actor, array $metadata = []): void

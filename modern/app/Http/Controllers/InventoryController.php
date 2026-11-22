@@ -7,6 +7,7 @@ use App\Models\AuditEvent;
 use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\LibraryPolicy;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +38,7 @@ class InventoryController extends Controller
     {
         DB::transaction(function () use ($request): void {
             LibraryPolicy::lockForUpdate()->findOrFail(1);
+            Gate::forUser(User::findOrFail($request->user()->id))->authorize('circulate');
             $copy = BookCopy::create($request->validated());
             AuditEvent::record('copy.created', $copy);
         });
@@ -48,6 +50,7 @@ class InventoryController extends Controller
     {
         DB::transaction(function () use ($request, $copy): void {
             LibraryPolicy::lockForUpdate()->findOrFail(1);
+            Gate::forUser(User::findOrFail($request->user()->id))->authorize('circulate');
             $fresh = BookCopy::lockForUpdate()->findOrFail($copy->id);
             if (in_array($fresh->status, ['held', 'loaned'], true)) {
                 throw ValidationException::withMessages(['status' => 'El ejemplar está asignado. Cancela la recogida o registra su devolución antes de modificarlo.']);

@@ -35,6 +35,7 @@ class MemberController extends Controller
     {
         DB::transaction(function () use ($request): void {
             LibraryPolicy::lockForUpdate()->findOrFail(1);
+            Gate::forUser(User::findOrFail($request->user()->id))->authorize('circulate');
             $member = Member::enroll(User::findOrFail($request->validated('user_id')));
             $member->update($request->safe()->except('user_id'));
             AuditEvent::record('member.enrolled', $member);
@@ -47,6 +48,7 @@ class MemberController extends Controller
     {
         DB::transaction(function () use ($request, $member): void {
             LibraryPolicy::lockForUpdate()->findOrFail(1);
+            Gate::forUser(User::findOrFail($request->user()->id))->authorize('circulate');
             $member->update($request->validated());
             AuditEvent::record('member.updated', $member, ['status' => $member->status, 'loan_limit' => $member->loan_limit]);
         });
