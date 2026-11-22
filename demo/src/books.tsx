@@ -4,6 +4,7 @@ import { BookCover } from "../../modern/resources/js/components/book-cover";
 import { Badge } from "../../modern/resources/js/components/ui";
 import type { Book } from "../../modern/resources/js/types";
 import type { Ref } from "react";
+import { AvailabilityLabel } from "./library-ui";
 
 export function DemoBookCard({
   book,
@@ -46,6 +47,7 @@ export function DemoBookCard({
           <DemoLink href={`/catalog/${book.id}`}>{book.title}</DemoLink>
         </h3>
         <p>{book.author}</p>
+        <AvailabilityLabel bookId={book.id} />
         <span className="book-meta">
           {book.publication_year} / {book.publisher}
         </span>

@@ -14,9 +14,14 @@ import {
   Search,
   ArrowLeft,
   PanelLeft,
+  BookCheck,
+  Wallet,
+  CalendarDays,
+  BookMarked,
 } from "lucide-react";
 import { DemoLink } from "./navigation";
 import { Button, cn } from "../../modern/resources/js/components/ui";
+import { ProfilePickerButton } from "./library-context";
 
 function ThemeToggle() {
   const [light, setLight] = useState(
@@ -52,12 +57,22 @@ function Navigation({
 }: {
   admin: boolean;
   mobile?: boolean;
-  close: () => void;
+  close: (href: string) => void;
 }) {
   const { pathname } = useLocation();
   const links = admin
     ? [
         { href: "/demo/admin", label: "Resumen", Icon: LayoutDashboard },
+        {
+          href: "/demo/admin/circulation",
+          label: "Circulación",
+          Icon: BookCheck,
+        },
+        {
+          href: "/demo/admin/finance",
+          label: "Tesorería ficticia",
+          Icon: Wallet,
+        },
         {
           href: "/demo/admin/books",
           label: "Gestión de fichas",
@@ -67,6 +82,8 @@ function Navigation({
     : [
         { href: "/", label: "Inicio", Icon: Home },
         { href: "/catalog", label: "Catálogo", Icon: Library },
+        { href: "/my-library", label: "Mi biblioteca", Icon: BookMarked },
+        { href: "/news", label: "Novedades", Icon: CalendarDays },
         { href: "/about", label: "Acerca del proyecto", Icon: Info },
       ];
   return (
@@ -76,7 +93,7 @@ function Navigation({
           href="/"
           className="brand"
           aria-label="Andrew's Bibliotecary, inicio"
-          onClick={close}
+          onClick={() => close("/")}
         >
           <span className="brand-mark" aria-hidden="true">
             a<span>◦</span>
@@ -106,7 +123,7 @@ function Navigation({
             <DemoLink
               key={href}
               href={href}
-              onClick={close}
+              onClick={() => close(href)}
               className={cn("nav-item", active && "active")}
               aria-current={active ? "page" : undefined}
             >
@@ -125,14 +142,18 @@ function Navigation({
       </nav>
       <div className="sidebar-bottom demo-secondary-navigation">
         {admin ? (
-          <DemoLink href="/catalog" onClick={close} className="text-link">
+          <DemoLink
+            href="/catalog"
+            onClick={() => close("/catalog")}
+            className="text-link"
+          >
             <ArrowLeft size={16} aria-hidden="true" />
             Volver a la biblioteca
           </DemoLink>
         ) : (
           <DemoLink
             href="/demo/admin"
-            onClick={close}
+            onClick={() => close("/demo/admin")}
             className="admin-entry"
             aria-label="Probar panel administrador"
           >
@@ -150,12 +171,17 @@ export function Shell({ children }: { children: ReactNode }) {
   const [menu, setMenu] = useState(false);
   const { pathname } = useLocation();
   const openedAt = useRef(pathname);
+  const pendingNavigation = useRef<string | null>(null);
   const admin =
     pathname === "/demo/admin" || pathname.startsWith("/demo/admin/");
   const context = admin
     ? pathname.endsWith("/books")
       ? "Administración / Fichas"
-      : "Administración / Resumen"
+      : pathname.endsWith("/circulation")
+        ? "Biblioteca / Circulación"
+        : pathname.endsWith("/finance")
+          ? "Administración / Tesorería"
+          : "Administración / Resumen"
     : pathname === "/"
       ? "Inicio"
       : pathname === "/catalog"
@@ -164,8 +190,21 @@ export function Shell({ children }: { children: ReactNode }) {
           ? "Ficha del libro"
           : pathname === "/about"
             ? "Acerca del proyecto"
-            : "Biblioteca";
+            : pathname === "/my-library"
+              ? "Mi biblioteca"
+              : pathname === "/news"
+                ? "Novedades"
+                : "Biblioteca";
   useEffect(() => setMenu(false), [pathname]);
+  useEffect(() => {
+    if (pendingNavigation.current !== pathname) return;
+    const frame = requestAnimationFrame(() =>
+      document
+        .querySelector<HTMLElement>("main h1")
+        ?.focus({ preventScroll: true }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [pathname]);
   useEffect(() => {
     const query = matchMedia("(min-width:781px)");
     const change = () => {
@@ -178,7 +217,10 @@ export function Shell({ children }: { children: ReactNode }) {
     <Dialog.Root
       open={menu}
       onOpenChange={(open) => {
-        if (open) openedAt.current = pathname;
+        if (open) {
+          openedAt.current = pathname;
+          pendingNavigation.current = null;
+        }
         setMenu(open);
       }}
     >
@@ -197,12 +239,20 @@ export function Shell({ children }: { children: ReactNode }) {
               admin && "admin-mobile-navigation",
             )}
             onCloseAutoFocus={(event) => {
-              if (openedAt.current !== pathname) {
+              if (pendingNavigation.current || openedAt.current !== pathname) {
                 event.preventDefault();
-                (
-                  document.querySelector<HTMLElement>("main h1") ??
-                  document.querySelector<HTMLElement>("main")
-                )?.focus({ preventScroll: true });
+                requestAnimationFrame(() => {
+                  if (
+                    pendingNavigation.current &&
+                    pendingNavigation.current !== window.location.pathname
+                  )
+                    return;
+                  (
+                    document.querySelector<HTMLElement>("main h1") ??
+                    document.querySelector<HTMLElement>("main")
+                  )?.focus({ preventScroll: true });
+                  pendingNavigation.current = null;
+                });
               }
             }}
           >
@@ -213,10 +263,17 @@ export function Shell({ children }: { children: ReactNode }) {
             </Dialog.Title>
             <Dialog.Description className="sr-only">
               {admin
-                ? "Resumen, gestión de fichas y regreso a la biblioteca."
-                : "Inicio, catálogo y acerca del proyecto."}
+                ? "Resumen, circulación, tesorería ficticia, gestión de fichas y regreso a la biblioteca."
+                : "Inicio, catálogo, Mi biblioteca, novedades y acerca del proyecto."}
             </Dialog.Description>
-            <Navigation admin={admin} mobile close={() => setMenu(false)} />
+            <Navigation
+              admin={admin}
+              mobile
+              close={(href) => {
+                pendingNavigation.current = href;
+                setMenu(false);
+              }}
+            />
           </Dialog.Content>
         </Dialog.Portal>
         <div className="app-main">
@@ -249,16 +306,16 @@ export function Shell({ children }: { children: ReactNode }) {
                 )
               )}
               <ThemeToggle />
+              <ProfilePickerButton />
             </div>
           </header>
-          {admin && (
-            <div className="admin-mode-bar">
-              <span className="demo-mode-badge">Modo demostración</span>
-              <p>
-                Los cambios duran en esta pestaña y se reinician al recargar.
-              </p>
-            </div>
-          )}
+          <div className="admin-mode-bar">
+            <span className="demo-mode-badge">Modo demostración</span>
+            <p>
+              Datos ficticios en memoria. Se reinician al recargar; no hay
+              cuentas ni cobros reales.
+            </p>
+          </div>
           <main
             id="contenido"
             tabIndex={-1}

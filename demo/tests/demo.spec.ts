@@ -3,6 +3,7 @@ import AxeBuilder from "@axe-core/playwright";
 import fs from "node:fs/promises";
 import path from "node:path";
 import books from "../src/data/books.json" with { type: "json" };
+import { gotoAsAdmin, selectProfile } from "./library-helpers";
 
 const routes = [
   "/",
@@ -83,6 +84,8 @@ test("visitante: inicio, catálogo, búsqueda, filtros, ficha, acerca y ausencia
   await expect(publicNav(page).getByRole("link")).toHaveText([
     "Inicio",
     "Catálogo",
+    "Mi biblioteca",
+    "Novedades",
     "Acerca del proyecto",
   ]);
   await expect(
@@ -165,15 +168,18 @@ test("administración: entrada secundaria, módulos, ruta anterior y regreso a v
     })
     .click();
   await expect(page).toHaveURL(/\/demo\/admin$/);
+  await selectProfile(page);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     "Resumen de la colección",
   );
   await expect(
     page.getByText("Modo demostración", { exact: true }),
   ).toBeVisible();
-  await expect(page.getByText(/se reinician al recargar/)).toBeVisible();
+  await expect(page.getByText(/Se reinician al recargar/)).toBeVisible();
   await expect(publicNav(page).getByRole("link")).toHaveText([
     "Resumen",
+    "Circulación",
+    "Tesorería ficticia",
     "Gestión de fichas",
   ]);
   await page
@@ -195,7 +201,7 @@ test("administración: entrada secundaria, módulos, ruta anterior y regreso a v
   await expect(page).toHaveURL(/\/catalog$/);
   await expect(
     page.getByText("Modo demostración", { exact: true }),
-  ).toHaveCount(0);
+  ).toBeVisible();
   await expect(
     publicNav(page).getByRole("link", { name: "Gestión de fichas" }),
   ).toHaveCount(0);
@@ -206,7 +212,7 @@ test("administración: entrada secundaria, módulos, ruta anterior y regreso a v
 test("administración: búsqueda, categorías, estados y paginación compacta", async ({
   page,
 }) => {
-  await page.goto("/demo/admin/books");
+  await gotoAsAdmin(page, "/demo/admin/books");
   await expect(rows(page)).toHaveCount(8);
   await page
     .getByRole("navigation", { name: "Paginación de fichas" })
@@ -214,6 +220,7 @@ test("administración: búsqueda, categorías, estados y paginación compacta", 
     .click();
   await expect(page).toHaveURL(/page=2/);
   await page.reload();
+  await selectProfile(page);
   await expect(page.getByText("Página 2 de 3", { exact: true })).toBeVisible();
   await page.getByLabel("Filtrar por categoría").selectOption("Historia");
   await expect(rows(page)).toHaveCount(4);
@@ -237,7 +244,7 @@ test("administración: búsqueda, categorías, estados y paginación compacta", 
     page.getByRole("heading", { name: "El archivo está vacío" }),
   ).toBeVisible();
   await expect(page.getByRole("button", { name: /Restaurar/ })).toHaveCount(0);
-  await page.goto("/demo/admin/books?page=999&category=Literatura");
+  await gotoAsAdmin(page, "/demo/admin/books?page=999&category=Literatura");
   await expect(page.getByText("Página 1 de 1", { exact: true })).toBeVisible();
   await expect(rows(page)).toHaveCount(4);
 });
@@ -245,7 +252,7 @@ test("administración: búsqueda, categorías, estados y paginación compacta", 
 test("edición validada, archivo confirmado, cancelación, restauración y estado compartido", async ({
   page,
 }) => {
-  await page.goto("/demo/admin/books");
+  await gotoAsAdmin(page, "/demo/admin/books");
   const edit = page.getByRole("button", {
     name: "Editar La arquitectura del silencio",
     exact: true,
@@ -342,7 +349,7 @@ test("alta simulada, escape de texto y restablecimiento confirmado sin persisten
   page,
   context,
 }) => {
-  await page.goto("/demo/admin/books");
+  await gotoAsAdmin(page, "/demo/admin/books");
   await page.getByRole("button", { name: "Nueva ficha", exact: true }).click();
   await page.getByRole("button", { name: "Guardar en la demo" }).click();
   for (const label of ["Título", "Autor", "Editorial", "Año de publicación"])
@@ -469,7 +476,7 @@ test("teclado, foco, Escape y tabs bibliográficos", async ({ page }) => {
   await expect(
     page.getByRole("tab", { name: "Descripción", exact: true }),
   ).toBeFocused();
-  await page.goto("/demo/admin/books");
+  await gotoAsAdmin(page, "/demo/admin/books");
   const trigger = page.getByRole("button", {
     name: "Nueva ficha",
     exact: true,
@@ -494,6 +501,7 @@ test("accesibilidad de todas las pantallas, formularios y confirmaciones en ambo
   for (const theme of ["dark", "light"]) {
     for (const route of routes) {
       await page.goto(route);
+      if (route.startsWith("/demo/admin")) await selectProfile(page);
       await page.locator("main h1").waitFor();
       await page.evaluate(
         (value) => (document.documentElement.dataset.theme = value),
@@ -502,7 +510,7 @@ test("accesibilidad de todas las pantallas, formularios y confirmaciones en ambo
       expect((await audit(page)).violations, `${theme}: ${route}`).toEqual([]);
     }
   }
-  await page.goto("/demo/admin/books");
+  await gotoAsAdmin(page, "/demo/admin/books");
   await page.getByRole("button", { name: "Nueva ficha", exact: true }).click();
   expect((await audit(page)).violations).toEqual([]);
   await page.keyboard.press("Escape");
@@ -523,6 +531,7 @@ test("responsive: todas las pantallas, menú móvil, foco y formularios sin desb
     await page.setViewportSize({ width, height: 900 });
     for (const route of routes) {
       await page.goto(route);
+      if (route.startsWith("/demo/admin")) await selectProfile(page);
       await page.locator("main h1").waitFor();
       expect(
         await page.evaluate(
@@ -553,8 +562,18 @@ test("responsive: todas las pantallas, menú móvil, foco y formularios sin desb
         .getByRole("dialog")
         .getByRole("link", { name: "Gestión de fichas" })
         .click();
+      await expect(page).toHaveURL(/\/demo\/admin\/books$/);
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+        "Gestión de fichas",
+      );
       await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
-    } else await page.goto("/demo/admin/books");
+    } else await gotoAsAdmin(page, "/demo/admin/books");
+    if (
+      await page
+        .getByRole("button", { name: "Cambiar perfil ficticio: Visitante" })
+        .isVisible()
+    )
+      await selectProfile(page);
     await page
       .getByRole("button", { name: "Nueva ficha", exact: true })
       .click();
@@ -627,7 +646,7 @@ test("capturas después: todas las pantallas en escritorio, tablet y móvil", as
   test.setTimeout(90000);
   await page.emulateMedia({ reducedMotion: "reduce" });
   const folder = path.resolve(
-    process.env.DEMO_SCREENSHOT_DIR || "docs/screenshots/v2.6/after",
+    process.env.DEMO_SCREENSHOT_DIR || "demo/output/presentation",
   );
   await fs.mkdir(folder, { recursive: true });
   const sizes: Record<string, unknown> = {};
@@ -686,9 +705,10 @@ test("capturas después: todas las pantallas en escritorio, tablet y móvil", as
       ["archivo", "/demo/admin/books?status=archived"],
     ]) {
       await page.goto(route);
+      if (route.startsWith("/demo/admin")) await selectProfile(page);
       await shot(`${device}-${name}`);
     }
-    await page.goto("/demo/admin/books");
+    await gotoAsAdmin(page, "/demo/admin/books");
     await page
       .getByRole("button", {
         name: "Editar La arquitectura del silencio",
@@ -707,7 +727,7 @@ test("capturas después: todas las pantallas en escritorio, tablet y móvil", as
     await page.keyboard.press("Escape");
   }
   await fs.writeFile(
-    process.env.DEMO_SIZES_FILE || "docs/evidence/ux26-screen-sizes.json",
+    process.env.DEMO_SIZES_FILE || "demo/output/presentation-sizes.json",
     JSON.stringify({ recordedAt: new Date().toISOString(), sizes }, null, 2) +
       "\n",
   );

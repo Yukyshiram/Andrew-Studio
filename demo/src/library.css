@@ -1,0 +1,166 @@
+.demo-library-section {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  scroll-margin-top: 1.5rem;
+}
+.demo-library-section > h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+  font:
+    400 clamp(1.7rem, 3vw, 2.3rem)/1.2 Georgia,
+    serif;
+}
+.demo-library-section .empty-state {
+  padding: 36px 24px;
+}
+.demo-library-section .data-table {
+  min-width: 720px;
+}
+.demo-library-section .data-table td:first-child,
+.demo-library-section .data-table .badge {
+  white-space: nowrap;
+}
+.demo-app .library-status-active,
+.demo-app .library-status-returned,
+.demo-app .library-status-ready,
+.demo-app .library-status-available {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 45%, var(--border));
+}
+.demo-app .library-status-overdue,
+.demo-app .library-status-expired,
+.demo-app .library-status-lost {
+  color: var(--error);
+  border-color: color-mix(in srgb, var(--error) 45%, var(--border));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .demo-library-section .library-record {
+    animation: route-enter 0.2s ease-out;
+  }
+}
+.demo-library-section h3 {
+  font:
+    400 1.45rem/1.3 Georgia,
+    serif;
+  overflow-wrap: anywhere;
+}
+.demo-library-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-block: 1.75rem;
+  align-items: end;
+}
+.demo-library-filters > .field {
+  flex: 1 1 160px;
+  min-width: 0;
+  margin-bottom: 0;
+}
+.demo-loan-card {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr);
+  gap: 1.5rem;
+}
+.demo-loan-cover {
+  display: block;
+  align-self: start;
+}
+.demo-loan-cover .book-cover {
+  width: 100%;
+  height: 116px;
+  min-height: 0;
+  border-radius: 3px 8px 8px 3px;
+}
+.demo-loan-cover .cover-title {
+  font-size: 0.65rem;
+}
+.demo-loan-cover .cover-author {
+  font-size: 0.4rem;
+}
+.demo-clock h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.demo-clock > div:first-child {
+  flex: 1 1 280px;
+}
+.demo-clock .library-actions {
+  margin-top: 0;
+}
+.demo-ledger-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.demo-ledger-list small {
+  display: block;
+  color: var(--muted);
+  margin-top: 0.35rem;
+}
+.demo-ledger-list strong {
+  white-space: nowrap;
+}
+.demo-operation-list {
+  display: grid;
+  gap: 1rem;
+  padding-left: 1.25rem;
+}
+.demo-operation-list li::marker {
+  color: var(--brand);
+}
+.demo-operation-list small {
+  color: var(--muted);
+}
+.demo-operation-list p {
+  margin-bottom: 0.25rem;
+}
+.demo-payment-form {
+  display: flex;
+  align-items: end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-block: 1.5rem 1rem;
+}
+.demo-payment-form .field {
+  flex: 1 1 200px;
+  margin-bottom: 0;
+}
+.demo-news-dates {
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-block: 1px solid var(--border);
+}
+.demo-news-dates summary {
+  cursor: pointer;
+  min-height: 26px;
+}
+.demo-news-dates summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 6px;
+}
+.demo-news-dates .demo-library-filters {
+  margin-bottom: 0;
+}
+@media (max-width: 600px) {
+  .demo-loan-card {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+  .demo-loan-cover {
+    display: none;
+  }
+  .demo-library-filters > .field {
+    flex-basis: 100%;
+  }
+  .demo-library-section .library-actions > .button,
+  .demo-payment-form > .button {
+    width: 100%;
+  }
+  .demo-ledger-list > div {
+    flex-wrap: wrap;
+  }
+}

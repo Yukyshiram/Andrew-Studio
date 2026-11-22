@@ -43,8 +43,14 @@ import { Heading } from "./heading";
 import { DemoLink, NavigationRestoration } from "./navigation";
 import { DemoBookCard, BookGrid } from "./books";
 import { Shell } from "./shell";
+import { DemoLibraryProvider, DemoFeedback } from "./library-context";
+import { BorrowBook } from "./library-ui";
 
 const Studio = lazy(() => import("./studio"));
+const Reader = lazy(() => import("./reader"));
+const Circulation = lazy(() => import("./circulation"));
+const Finance = lazy(() => import("./finance"));
+const News = lazy(() => import("./news"));
 function Home() {
   const { books } = useCollection();
   const active = books.filter((b) => !b.deleted_at);
@@ -303,6 +309,7 @@ function BookDetail() {
             {book.publisher} · {book.publication_year}
           </p>
           <p className="fiction-label">Ficha ficticia de demostración</p>
+          <BorrowBook bookId={book.id} />
           <div className="detail-divider" />
           <div
             className="editorial-tabs"
@@ -417,7 +424,7 @@ function About() {
   return (
     <>
       <Heading eyebrow="ANDREW'S BIBLIOTECARY" title="Acerca del proyecto">
-        Una biblioteca digital para explorar fichas y probar su gestión.
+        Una biblioteca digital para explorar fichas y probar su circulación.
       </Heading>
       <div className="about-content">
         <section>
@@ -433,12 +440,25 @@ function About() {
           </Button>
         </section>
         <section>
+          <h2>Prueba un recorrido de lectura</h2>
+          <p>
+            Elige un perfil ficticio desde la barra superior. Solicita un libro,
+            cambia a Biblioteca para preparar y confirmar la entrega, y vuelve a
+            Mi biblioteca para renovar. En Biblioteca también puedes simular la
+            devolución y observar la disponibilidad.
+          </p>
+          <Button asChild>
+            <DemoLink href="/my-library">Explorar Mi biblioteca</DemoLink>
+          </Button>
+        </section>
+        <section>
           <h2>Prueba la administración</h2>
           <p>
             El panel permite crear, editar, archivar y restaurar fichas. Los
             cambios solo duran en esta pestaña: se reinician al recargar. Entrar
             al panel no crea una cuenta ni representa autenticación o control de
-            acceso.
+            acceso. El selector de perfiles solo cambia el recorrido de
+            demostración. Las muestras de cargos y pagos no mueven dinero real.
           </p>
           <Button asChild variant="secondary">
             <DemoLink href="/demo/admin">Probar panel administrador</DemoLink>
@@ -488,8 +508,12 @@ function App() {
           ? "La colección"
           : location.pathname.startsWith("/demo/admin")
             ? "Administración · Modo demostración"
-            : (books.find((b) => `/catalog/${b.id}` === location.pathname)
-                ?.title ?? "Interactive Edition");
+            : location.pathname === "/my-library"
+              ? "Mi biblioteca"
+              : location.pathname === "/news"
+                ? "Novedades"
+                : (books.find((b) => `/catalog/${b.id}` === location.pathname)
+                    ?.title ?? "Interactive Edition");
     document.title = `${title} · Andrew's Bibliotecary`;
   }, [location.pathname, books]);
   return (
@@ -499,40 +523,50 @@ function App() {
         transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
       >
         <Collection.Provider value={{ books, setBooks }}>
-          <PresentationNavigation value={DemoLink}>
-            <Shell>
-              <div key={location.pathname} className="demo-route-content">
-                <Suspense
-                  fallback={
-                    <div role="status" aria-label="Cargando el taller">
-                      <Skeleton className="workshop-skeleton" />
-                    </div>
-                  }
-                >
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/catalog" element={<Catalog />} />
-                    <Route path="/catalog/:id" element={<BookDetail />} />
-                    <Route
-                      path="/studio"
-                      element={<Navigate to="/demo/admin" replace />}
-                    />
-                    <Route
-                      path="/demo/admin"
-                      element={<Studio view="overview" />}
-                    />
-                    <Route
-                      path="/demo/admin/books"
-                      element={<Studio view="books" />}
-                    />
-                    <Route path="/about" element={<About />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-              </div>
-              <NavigationRestoration />
-            </Shell>
-          </PresentationNavigation>
+          <DemoLibraryProvider>
+            <PresentationNavigation value={DemoLink}>
+              <Shell>
+                <DemoFeedback />
+                <div key={location.pathname} className="demo-route-content">
+                  <Suspense
+                    fallback={
+                      <div role="status" aria-label="Cargando la biblioteca">
+                        <Skeleton className="workshop-skeleton" />
+                      </div>
+                    }
+                  >
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/catalog" element={<Catalog />} />
+                      <Route path="/catalog/:id" element={<BookDetail />} />
+                      <Route path="/my-library" element={<Reader />} />
+                      <Route path="/news" element={<News />} />
+                      <Route
+                        path="/demo/admin/circulation"
+                        element={<Circulation />}
+                      />
+                      <Route path="/demo/admin/finance" element={<Finance />} />
+                      <Route
+                        path="/studio"
+                        element={<Navigate to="/demo/admin" replace />}
+                      />
+                      <Route
+                        path="/demo/admin"
+                        element={<Studio view="overview" />}
+                      />
+                      <Route
+                        path="/demo/admin/books"
+                        element={<Studio view="books" />}
+                      />
+                      <Route path="/about" element={<About />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
+                </div>
+                <NavigationRestoration />
+              </Shell>
+            </PresentationNavigation>
+          </DemoLibraryProvider>
         </Collection.Provider>
       </MotionConfig>
     </LazyMotion>

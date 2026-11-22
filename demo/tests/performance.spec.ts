@@ -10,6 +10,27 @@ type Metrics = {
   longTaskMs: number;
   unsupported: string[];
 };
+type Sample = {
+  profile: string;
+  viewport: { width: number; height: number };
+  repetition: number;
+  freeMemoryBytes: number;
+  initial: Metrics & {
+    ttfbMs: number;
+    transferBytes: number;
+    javascriptTransferBytes: number;
+    resources: { path: string; transferBytes: number; encodedBytes: number }[];
+  };
+  interaction: {
+    durationMs: number;
+    clsDelta: number;
+    longTasks: number;
+    longTaskMs: number;
+    scriptDurationSeconds: number | null;
+    layoutDurationSeconds: number | null;
+    taskDurationSeconds: number | null;
+  };
+};
 const median = (values: number[]) =>
   [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
 
@@ -37,7 +58,7 @@ test("medición estática reproducible: carga fría, catálogo y apertura CSS", 
       hasTouch: true,
     },
   ];
-  const samples = [];
+  const samples: Sample[] = [];
   for (const profile of profiles) {
     for (let repetition = 1; repetition <= 3; repetition++) {
       const context = await browser.newContext({

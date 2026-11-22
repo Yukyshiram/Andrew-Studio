@@ -9,7 +9,9 @@ import {
   BookOpen,
   Library,
 } from "lucide-react";
-import { useCollection, initialBooks, demoCategories } from "./collection";
+import { useCollection, demoCategories } from "./collection";
+import { useDemoLibrary, ProfileInvitation } from "./library-context";
+import { hasOpenCirculation, profileFor } from "./library-domain";
 import { Heading } from "./heading";
 import { DemoLink } from "./navigation";
 import { AdminBookForm, emptyBook, type BookDraft } from "./admin-book-form";
@@ -32,6 +34,10 @@ const normalize = (text: string) =>
     .toLocaleLowerCase("es");
 export default function Studio({ view }: { view: "overview" | "books" }) {
   const { books, setBooks } = useCollection();
+  const { state, reset } = useDemoLibrary();
+  const [messageKind, setMessageKind] = useState<"success" | "error">(
+    "success",
+  );
   const [params, setParams] = useSearchParams();
   const [editor, setEditor] = useState<{
     book: BookDraft;
@@ -76,6 +82,7 @@ export default function Studio({ view }: { view: "overview" | "books" }) {
   }
   function save(draft: BookDraft) {
     if (!editor) return;
+    setMessageKind("success");
     const now = new Date().toISOString();
     if (editor.id === null) {
       setBooks((items) => [
@@ -104,12 +111,24 @@ export default function Studio({ view }: { view: "overview" | "books" }) {
   }
   function confirm() {
     if (!confirmation) return;
+    setMessageKind("success");
     if (confirmation.kind === "reset") {
-      setBooks(structuredClone(initialBooks));
+      reset();
       setParams({}, { replace: true, preventScrollReset: true });
       setMessage("Datos de demostración restablecidos.");
     } else {
       const target = confirmation.book;
+      if (hasOpenCirculation(state, target.id)) {
+        setMessageKind("error");
+        setMessage(
+          "No puedes archivar una ficha con préstamos o solicitudes abiertos. Atiéndelos antes en Circulación.",
+        );
+        setConfirmation(null);
+        requestAnimationFrame(() =>
+          resultRef.current?.focus({ preventScroll: true }),
+        );
+        return;
+      }
       setBooks((items) =>
         items.map((book) =>
           book.id === target.id
@@ -132,6 +151,20 @@ export default function Studio({ view }: { view: "overview" | "books" }) {
       Restablecer datos
     </Button>
   );
+  if (profileFor(state).role !== "admin")
+    return (
+      <>
+        <Heading
+          eyebrow="GESTIÓN DE LA COLECCIÓN · DEMOSTRACIÓN"
+          title={
+            view === "overview"
+              ? "Resumen de la colección"
+              : "Gestión de fichas"
+          }
+        />
+        <ProfileInvitation staff admin />
+      </>
+    );
   return (
     <>
       <div className="admin-page-header">
@@ -163,7 +196,7 @@ export default function Studio({ view }: { view: "overview" | "books" }) {
         </div>
       </div>
       <div ref={resultRef} tabIndex={-1} className="admin-feedback">
-        <Notice>{message}</Notice>
+        <Notice kind={messageKind}>{message}</Notice>
       </div>
       {view === "overview" ? (
         <>
@@ -500,7 +533,7 @@ export default function Studio({ view }: { view: "overview" | "books" }) {
         }
         description={
           confirmation?.kind === "reset"
-            ? "Se descartarán las fichas creadas y los cambios de esta pestaña. Volverás a la colección inicial."
+            ? "Se descartarán las fichas creadas, los préstamos, las solicitudes y los movimientos simulados. Volverás a la colección y al reloj ficticio iniciales."
             : `«${confirmation?.kind === "archive" ? confirmation.book.title : ""}» dejará de aparecer en el catálogo. Podrás restaurarla desde el archivo.`
         }
       >

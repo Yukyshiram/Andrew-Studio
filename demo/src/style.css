@@ -949,3 +949,121 @@
     transform: none;
   }
 }
+.demo-profile-trigger {
+  min-width: 44px;
+}
+.demo-profile-list {
+  display: grid;
+  gap: 0.65rem;
+}
+.demo-profile-list > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  text-align: left;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    border-color 0.18s,
+    background-color 0.18s;
+}
+.demo-profile-list > button:hover,
+.demo-profile-list > button[aria-pressed="true"] {
+  border-color: var(--brand);
+  background: var(--raised);
+}
+.demo-profile-list > button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.demo-profile-list strong {
+  display: block;
+  margin-bottom: 0.4rem;
+}
+.demo-profile-list small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+.demo-profile-list svg {
+  flex: 0 0 auto;
+  color: var(--brand);
+}
+.demo-profile-invitation {
+  padding: clamp(24px, 5vw, 48px);
+  max-width: 760px;
+}
+.demo-profile-invitation h2 {
+  font:
+    400 clamp(1.8rem, 4vw, 2.5rem)/1.2 Georgia,
+    serif;
+  margin-block: 1rem;
+}
+.demo-profile-invitation > p:not(.eyebrow) {
+  color: var(--muted);
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+}
+.demo-feedback:empty {
+  display: none;
+}
+.demo-feedback .notice > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+.demo-feedback .notice {
+  margin-bottom: 1.5rem;
+}
+.book-card-info > .book-availability {
+  display: block;
+  font-size: 0.75rem;
+  margin-block: 0.5rem;
+}
+.demo-book-detail .library-borrow > p {
+  line-height: 1.7;
+}
+.demo-book-detail .library-borrow .text-link {
+  margin-top: 0.75rem;
+}
+.demo-app .topbar-actions {
+  flex-wrap: wrap;
+}
+@media (max-width: 1000px) {
+  .demo-app .topbar-explore {
+    display: none;
+  }
+  .demo-profile-trigger {
+    padding: 10px;
+  }
+}
+@media (max-width: 600px) {
+  .demo-profile-trigger > span {
+    display: none;
+  }
+  .demo-app .topbar-actions {
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+  }
+  .demo-app .admin-mode-bar {
+    align-items: start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .demo-app .admin-mode-bar p {
+    font-size: 0.75rem;
+  }
+  .demo-feedback .notice > span {
+    align-items: start;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}

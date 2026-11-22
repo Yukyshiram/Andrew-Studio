@@ -4,12 +4,23 @@ const port = process.env.DEMO_E2E_PORT || "4174";
 const baseURL = `http://127.0.0.1:${port}`;
 export default defineConfig({
   testDir: "./tests",
+  testMatch: "**/*.spec.ts",
   outputDir: "./output/test-results",
   timeout: 30000,
   fullyParallel: false,
   workers: 1,
   retries: 0,
-  reporter: [["list"], ["json", { outputFile: "./output/results.json" }]],
+  reporter: [
+    ["list"],
+    [
+      "json",
+      {
+        outputFile:
+          process.env.DEMO_E2E_RESULTS_FILE ||
+          path.resolve(import.meta.dirname, "output/results.json"),
+      },
+    ],
+  ],
   use: {
     baseURL,
     locale: "es-MX",
