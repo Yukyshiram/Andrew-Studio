@@ -15,7 +15,12 @@ class Isbn implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $isbn = (string) $value;
+        if (! is_string($value)) {
+            $fail('Escribe un ISBN en formato de texto.');
+
+            return;
+        }
+        $isbn = $value;
         $valid = false;
         if (preg_match('/^\d{9}[\dX]$/', $isbn)) {
             $sum = 0;

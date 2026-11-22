@@ -44,12 +44,15 @@ class LibraryFoundationTest extends TestCase
         $this->assertDatabaseHas('books', ['id' => $book->id, 'isbn' => $normalized, 'edition' => 'Segunda']);
     }
 
-    public function test_invalid_isbn_is_rejected_without_changing_title(): void
+    #[TestWith(['9780306406158'])]
+    #[TestWith([['unexpected' => 'array']])]
+    #[TestWith([123])]
+    public function test_invalid_isbn_is_rejected_without_changing_title(mixed $isbn): void
     {
         $book = Book::factory()->create();
         $this->actingAs(User::factory()->create(['role' => 'librarian']))->put('/manage/books/'.$book->id, [
-            ...$book->only(['title', 'author', 'publisher', 'publication_year', 'description', 'category', 'cover_color']), 'isbn' => '9780306406158',
-        ])->assertSessionHasErrors(['isbn' => 'Escribe un ISBN-10 o ISBN-13 con dígito de control válido.']);
+            ...$book->only(['title', 'author', 'publisher', 'publication_year', 'description', 'category', 'cover_color']), 'isbn' => $isbn,
+        ])->assertSessionHasErrors('isbn');
         $this->assertNull($book->fresh()->isbn);
     }
 

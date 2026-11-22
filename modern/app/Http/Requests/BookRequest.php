@@ -31,7 +31,7 @@ class BookRequest extends FormRequest
             'publisher' => ['required', 'string', 'max:255'], 'publication_year' => ['required', 'string', 'max:50'],
             'description' => ['nullable', 'string', 'max:10000'],
             'category' => ['required', Rule::in(Book::CATEGORIES)], 'cover_color' => ['required', Rule::in(Book::COLORS)],
-            'isbn' => ['nullable', 'string', new Isbn],
+            'isbn' => ['bail', 'nullable', 'string', new Isbn],
             'edition' => ['nullable', 'string', 'max:100'],
             'language' => ['sometimes', 'required', 'string', 'max:80'],
         ];
