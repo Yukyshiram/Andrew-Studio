@@ -85,6 +85,8 @@ class CirculationHttpTest extends TestCase
         $this->actingAs($staff)->post('/manage/circulation/loans/'.$loan->id.'/receive', ['condition' => 'good'])->assertSessionHasNoErrors();
         $this->get('/catalog/'.$copy->book_id)->assertInertia(fn (Assert $page) => $page->where('book.available_copies', 1));
         $this->actingAs($reader)->get('/my-library?view=history')->assertInertia(fn (Assert $page) => $page->has('loans.data', 1)->where('loans.data.0.status', 'returned')->where('stats.active', 0));
+        $this->actingAs($staff)->post('/manage/circulation/requests/'.$request->id.'/issue')->assertSessionHas('success', 'La entrega ya estaba registrada y el préstamo está cerrado.');
+        $this->assertDatabaseCount('loans', 1);
     }
 
     public function test_readers_cannot_supply_another_member_copy_status_or_due_date(): void

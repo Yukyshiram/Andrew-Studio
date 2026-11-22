@@ -57,9 +57,9 @@ class CirculationController extends Controller
 
     public function issue(Request $request, int $requestId, CirculationService $service): RedirectResponse
     {
-        $service->issue($request->user(), $requestId);
+        $loan = $service->issue($request->user(), $requestId);
 
-        return back()->with('success', 'Entrega confirmada. El préstamo está activo.');
+        return back()->with('success', $loan->status === 'active' ? 'Entrega confirmada. El préstamo está activo.' : 'La entrega ya estaba registrada y el préstamo está cerrado.');
     }
 
     public function reject(Request $request, int $requestId, CirculationService $service): RedirectResponse
@@ -76,6 +76,6 @@ class CirculationController extends Controller
         Gate::authorize('receive', Loan::findOrFail($loanId));
         $service->receive($request->user(), $loanId, $request->validated('condition'));
 
-        return back()->with('success', 'Devolución registrada. Se actualizó la disponibilidad.');
+        return back()->with('success', 'Cierre registrado. Consulta en inventario el estado actual del ejemplar.');
     }
 }
