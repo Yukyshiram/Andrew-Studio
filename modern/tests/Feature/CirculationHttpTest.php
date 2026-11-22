@@ -19,6 +19,24 @@ class CirculationHttpTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_library_pages_reject_unbounded_pagination_before_querying_records(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        foreach (['/my-library', '/manage/circulation', '/manage/members', '/manage/inventory'] as $url) {
+            $this->get($url.'?page=9223372036854775807')->assertSessionHasErrors('page');
+        }
+    }
+
+    public function test_staff_can_find_closed_requests_and_their_rejection_reason(): void
+    {
+        $reader = $this->reader();
+        $staff = User::factory()->create(['role' => 'librarian']);
+        $copy = BookCopy::factory()->create();
+        $record = app(CirculationService::class)->requestBook($reader, $copy->book_id);
+        $this->actingAs($staff)->post('/manage/circulation/requests/'.$record->id.'/reject', ['reason' => 'Ejemplar pendiente de revisión.'])->assertSessionHasNoErrors();
+        $this->get('/manage/circulation?status=rejected')->assertInertia(fn (Assert $page) => $page->has('requests.data', 1)->where('requests.data.0.decision_reason', 'Ejemplar pendiente de revisión.'));
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

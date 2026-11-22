@@ -4,6 +4,7 @@ import { AppShell } from "../../components/layout";
 import { PaginationLinks } from "../../components/books";
 import {
     LibraryErrors,
+    LibraryBookTitle,
     LibraryStatus,
     LibraryTabs,
     libraryDate,
@@ -123,11 +124,9 @@ export default function MyLibrary({
                                         >
                                             <div className="library-record-heading">
                                                 <h2>
-                                                    <Link
-                                                        href={`/catalog/${record.book_id}`}
-                                                    >
-                                                        {record.book.title}
-                                                    </Link>
+                                                    <LibraryBookTitle
+                                                        book={record.book}
+                                                    />
                                                 </h2>
                                                 <LibraryStatus
                                                     value={record.status}
@@ -231,11 +230,9 @@ export default function MyLibrary({
                                         >
                                             <div className="library-record-heading">
                                                 <h2>
-                                                    <Link
-                                                        href={`/catalog/${loan.copy.book_id}`}
-                                                    >
-                                                        {loan.copy.book.title}
-                                                    </Link>
+                                                    <LibraryBookTitle
+                                                        book={loan.copy.book}
+                                                    />
                                                 </h2>
                                                 <LibraryStatus
                                                     value={

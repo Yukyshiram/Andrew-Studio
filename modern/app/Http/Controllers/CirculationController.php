@@ -23,13 +23,12 @@ class CirculationController extends Controller
         Gate::authorize('circulate');
         $filters = $request->validate([
             'view' => ['nullable', Rule::in(['requests', 'loans', 'history'])],
-            'status' => ['nullable', Rule::in(CirculationRequest::OPEN)],
-            'q' => ['nullable', 'string', 'max:80'], 'page' => ['nullable', 'integer', 'min:1'],
+            'status' => ['nullable', Rule::in(CirculationRequest::STATES)],
+            'q' => ['nullable', 'string', 'max:80'], 'page' => ['nullable', 'integer', 'min:1', 'max:100000'],
         ]);
         $view = $filters['view'] ?? 'requests';
         $today = $calendar->today(LibraryPolicy::current()->terms())->toDateString();
-        $requests = CirculationRequest::with(['book', 'member.user:id,name,email', 'allocation.copy'])->whereIn('status', CirculationRequest::OPEN)
-            ->when($filters['status'] ?? '', fn ($query, $status) => $query->where('status', $status))
+        $requests = CirculationRequest::with(['book', 'member.user:id,name,email', 'allocation.copy'])->whereIn('status', ! empty($filters['status']) ? [$filters['status']] : CirculationRequest::OPEN)
             ->when($filters['q'] ?? '', fn ($query, $q) => $query->where(fn ($query) => $query->whereHas('book', fn ($book) => $book->where('title', 'like', '%'.$q.'%'))->orWhereHas('member', fn ($member) => $member->where('card_number', 'like', '%'.$q.'%')->orWhereHas('user', fn ($user) => $user->where('name', 'like', '%'.$q.'%')))));
         $loans = Loan::with(['copy.book', 'member.user:id,name,email'])->when($view === 'history', fn ($query) => $query->where('status', '!=', 'active'), fn ($query) => $query->where('status', 'active'))
             ->when($filters['q'] ?? '', fn ($query, $q) => $query->where(fn ($query) => $query->whereHas('copy', fn ($copy) => $copy->where('barcode', 'like', '%'.$q.'%')->orWhereHas('book', fn ($book) => $book->where('title', 'like', '%'.$q.'%')))->orWhereHas('member', fn ($member) => $member->where('card_number', 'like', '%'.$q.'%')->orWhereHas('user', fn ($user) => $user->where('name', 'like', '%'.$q.'%')))));

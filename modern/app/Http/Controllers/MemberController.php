@@ -19,7 +19,7 @@ class MemberController extends Controller
     public function index(Request $request): Response
     {
         Gate::authorize('circulate');
-        $filters = $request->validate(['q' => ['nullable', 'string', 'max:80'], 'page' => ['nullable', 'integer', 'min:1']]);
+        $filters = $request->validate(['q' => ['nullable', 'string', 'max:80'], 'page' => ['nullable', 'integer', 'min:1', 'max:100000']]);
         $members = Member::with('user:id,name,email,deleted_at')->when($filters['q'] ?? '', function ($query, $term): void {
             $query->where(function ($query) use ($term): void {
                 $query->where('card_number', 'like', '%'.$term.'%')->orWhereHas('user', fn ($user) => $user->where('name', 'like', '%'.$term.'%')->orWhere('email', 'like', '%'.$term.'%'));

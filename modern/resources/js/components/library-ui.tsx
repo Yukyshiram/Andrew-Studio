@@ -1,5 +1,18 @@
 import { Link, useForm } from "@inertiajs/react";
 import { Badge, Field, Input, Notice, SubmitButton } from "./ui";
+import type { Book } from "../types";
+
+export function LibraryBookTitle({
+    book,
+}: {
+    book: Pick<Book, "id" | "title" | "deleted_at">;
+}) {
+    return book.deleted_at ? (
+        <span>{book.title}</span>
+    ) : (
+        <Link href={`/catalog/${book.id}`}>{book.title}</Link>
+    );
+}
 
 const states: Record<string, string> = {
     available: "Disponible",
@@ -25,7 +38,11 @@ const states: Record<string, string> = {
     loan_active: "Préstamo activo",
 };
 export function LibraryStatus({ value }: { value: string }) {
-    return <Badge className={`library-status library-status-${value}`}>{states[value] ?? value}</Badge>;
+    return (
+        <Badge className={`library-status library-status-${value}`}>
+            {states[value] ?? value}
+        </Badge>
+    );
 }
 export function LibrarySearch({
     q,

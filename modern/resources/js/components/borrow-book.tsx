@@ -11,7 +11,7 @@ export function BorrowBook({
     book: Book;
     hasMembership: boolean;
 }) {
-    const { auth } = usePage<SharedProps>().props;
+    const { auth, can } = usePage<SharedProps>().props;
     const [open, setOpen] = useState(false);
     const form = useForm({ book_id: book.id });
     const available = (book.available_copies ?? 0) > 0;
@@ -27,15 +27,31 @@ export function BorrowBook({
                         : "Sin ejemplares incorporados"}
                 </strong>
             </p>
+            {can.manageBooks && (
+                <Button asChild variant="secondary">
+                    <Link
+                        href={`/manage/inventory?q=${encodeURIComponent(book.title)}`}
+                    >
+                        Gestionar ejemplares
+                    </Link>
+                </Button>
+            )}
             {!auth.user ? (
                 <Button asChild>
                     <Link href="/login">Inicia sesión para solicitar</Link>
                 </Button>
             ) : !hasMembership ? (
-                <Notice kind="info">
-                    Tu cuenta requiere alta de socio. Solicítala al personal
-                    para poder reservar o tomar libros en préstamo.
-                </Notice>
+                can.manageBooks ? (
+                    <p className="library-context">
+                        Atiende las solicitudes desde Circulación. Si también
+                        deseas tomar préstamos, registra tu cuenta como socio.
+                    </p>
+                ) : (
+                    <Notice kind="info">
+                        Tu cuenta requiere alta de socio. Solicítala al personal
+                        para poder reservar o tomar libros en préstamo.
+                    </Notice>
+                )
             ) : (
                 <>
                     <Button onClick={() => setOpen(true)}>

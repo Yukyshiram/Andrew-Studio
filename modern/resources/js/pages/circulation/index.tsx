@@ -4,6 +4,7 @@ import { AppShell } from "../../components/layout";
 import { PaginationLinks } from "../../components/books";
 import {
     LibraryErrors,
+    LibraryBookTitle,
     LibrarySearch,
     LibraryStatus,
     LibraryTabs,
@@ -159,6 +160,10 @@ export default function Circulation({
                             </option>
                             <option value="waiting">En lista de espera</option>
                             <option value="ready">Listas para recoger</option>
+                            <option value="fulfilled">Entregadas</option>
+                            <option value="rejected">Rechazadas</option>
+                            <option value="cancelled">Canceladas</option>
+                            <option value="expired">Recogidas vencidas</option>
                         </Select>
                     </Field>
                     {requests.data.length ? (
@@ -170,11 +175,9 @@ export default function Circulation({
                                 >
                                     <div className="library-record-heading">
                                         <h2>
-                                            <Link
-                                                href={`/catalog/${record.book_id}`}
-                                            >
-                                                {record.book.title}
-                                            </Link>
+                                            <LibraryBookTitle
+                                                book={record.book}
+                                            />
                                         </h2>
                                         <LibraryStatus value={record.status} />
                                     </div>
@@ -231,15 +234,27 @@ export default function Circulation({
                                                 Confirmar entrega
                                             </Button>
                                         )}
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() =>
-                                                open({ kind: "reject", record })
-                                            }
-                                            aria-label={`Rechazar solicitud de ${record.member?.user.name}`}
-                                        >
-                                            Rechazar
-                                        </Button>
+                                        {record.decision_reason && (
+                                            <p>{record.decision_reason}</p>
+                                        )}
+                                        {[
+                                            "pending",
+                                            "waiting",
+                                            "ready",
+                                        ].includes(record.status) && (
+                                            <Button
+                                                variant="ghost"
+                                                onClick={() =>
+                                                    open({
+                                                        kind: "reject",
+                                                        record,
+                                                    })
+                                                }
+                                                aria-label={`Rechazar solicitud de ${record.member?.user.name}`}
+                                            >
+                                                Rechazar
+                                            </Button>
+                                        )}
                                     </div>
                                 </Card>
                             ))}
@@ -261,11 +276,9 @@ export default function Circulation({
                                 <Card key={loan.id} className="library-record">
                                     <div className="library-record-heading">
                                         <h2>
-                                            <Link
-                                                href={`/catalog/${loan.copy.book_id}`}
-                                            >
-                                                {loan.copy.book.title}
-                                            </Link>
+                                            <LibraryBookTitle
+                                                book={loan.copy.book}
+                                            />
                                         </h2>
                                         <LibraryStatus
                                             value={

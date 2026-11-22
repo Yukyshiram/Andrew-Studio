@@ -70,7 +70,7 @@ export default function Inventory({
             <LibrarySearch
                 q={filters.q}
                 action="/manage/inventory"
-                hint="Código de barras o título. Para incorporar otros títulos, abre primero su ficha en gestión."
+                hint="Busca un código o título. La búsqueda también filtra las fichas del formulario: hasta 200 coincidencias; precisa el título para localizar otras."
             />
             {copies.data.length ? (
                 <div

@@ -219,6 +219,22 @@ test("circulación real: lector solicita, personal prepara y entrega, devuelve y
                     .analyze()
             ).violations,
         ).toEqual([]);
+        await page.goto(`/manage/books?q=${unique}`);
+        await page
+            .getByRole("button", { name: `Archivar ${title}`, exact: true })
+            .click();
+        await page
+            .getByRole("dialog")
+            .getByRole("button", { name: "Archivar libro", exact: true })
+            .click();
+        await expect(page.getByRole("dialog")).toHaveCount(0);
+        await reader.goto("/my-library?view=history");
+        await expect(
+            reader.getByRole("heading", { name: title, exact: true }),
+        ).toBeVisible();
+        await expect(
+            reader.getByRole("link", { name: title, exact: true }),
+        ).toHaveCount(0);
         expect(errors).toEqual([]);
         expect(external).toEqual([]);
     } finally {

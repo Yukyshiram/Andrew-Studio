@@ -15,6 +15,14 @@ class InventoryPolicyTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_titles_outside_the_initial_selector_limit_can_be_found_by_search(): void
+    {
+        $this->withoutVite();
+        Book::factory()->count(201)->create(['title' => 'A título de inventario']);
+        $target = Book::factory()->create(['title' => 'ZZZ ficha fuera del primer grupo']);
+        $this->actingAs(User::factory()->create(['role' => 'librarian']))->get('/manage/inventory?q=ZZZ')->assertInertia(fn (Assert $page) => $page->has('books', 1)->where('books.0.id', $target->id));
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

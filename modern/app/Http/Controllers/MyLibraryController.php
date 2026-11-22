@@ -19,7 +19,7 @@ class MyLibraryController extends Controller
 {
     public function index(Request $request, LibraryCalendar $calendar): Response
     {
-        $filters = $request->validate(['view' => ['nullable', Rule::in(['loans', 'requests', 'history'])], 'page' => ['nullable', 'integer', 'min:1']]);
+        $filters = $request->validate(['view' => ['nullable', Rule::in(['loans', 'requests', 'history'])], 'page' => ['nullable', 'integer', 'min:1', 'max:100000']]);
         $view = $filters['view'] ?? 'loans';
         $member = Member::where('user_id', $request->user()->id)->first();
         $terms = LibraryPolicy::current()->terms();

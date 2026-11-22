@@ -12,6 +12,8 @@ class CirculationRequest extends Model
 {
     public const OPEN = ['pending', 'waiting', 'ready'];
 
+    public const STATES = ['pending', 'waiting', 'ready', 'fulfilled', 'rejected', 'cancelled', 'expired'];
+
     protected $guarded = ['id'];
 
     protected function casts(): array
