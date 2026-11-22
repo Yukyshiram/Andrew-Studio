@@ -8,7 +8,7 @@ Referencias que deben permanecer intactas: `main`, `origin/main`, `archive/legac
 
 ## Investigación y situación existente
 
-Se inspeccionaron modelos, migraciones, servicios, políticas, controladores, rutas, tipos React y pruebas. Actualmente `books` describe títulos y `users` identifica cuentas con roles reader/librarian/admin. No existen ejemplares, préstamos, socios bibliotecarios, reservas ni contabilidad. La demo permite editar fichas únicamente en memoria. No se atribuyen funciones de circulación a la versión anterior.
+En la inspección inicial de 2.6 se revisaron modelos, migraciones, servicios, políticas, controladores, rutas, tipos React y pruebas. En ese punto `books` describía títulos y `users` identificaba cuentas con roles reader/librarian/admin; no existían ejemplares, préstamos, socios bibliotecarios, reservas ni contabilidad. La demo permitía editar fichas únicamente en memoria. No se atribuyen funciones de circulación a la versión anterior. El avance real de A–C está en [Implementación](17_IMPLEMENTACION_3.md), y las reglas ejecutadas de reservas en [Etapa C](18_RESERVAS_Y_RENOVACIONES.md); tesorería, novedades y circulación estática siguen pendientes.
 
 Referencias primarias consultadas el 21/11/2026:
 

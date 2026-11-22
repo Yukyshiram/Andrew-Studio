@@ -43,17 +43,29 @@ Se reforzó el aislamiento: el arranque de las pruebas rechaza cualquier base di
 
 Se ejecutó `node modern/scripts/upgrade-local.mjs`: respaldo privado transaccional, mantenimiento, migraciones aditivas y comparación de todas las columnas anteriores de usuarios, libros, lotes y auditoría. El registro privado confirma `existingDataPreserved: true`. No se sembraron datos ficticios en esa base. Los scripts de respaldo y actualización están versionados; los SQL y sus registros permanecen ignorados en `.local/backups/` y no deben publicarse ni incluirse en entregas. **La restauración de ese respaldo no se ha probado**. Las pruebas destructivas y de reversión se ejecutan únicamente en bases sintéticas aisladas.
 
+## Etapa C verificada
+
+Se completaron posición de espera privada, caducidad de recogida con fecha local inclusiva, asignación automática al incorporar/reparar ejemplares, cierre con aviso de reservas en espera de membresías inactivas y renovaciones privadas/idempotentes con registro propio. Las renovaciones conservan las condiciones acordadas, revalidan derechos y se bloquean ante solicitudes abiertas de otras personas. Los avisos internos incluyen título y fechas legibles; no son correo externo. La interfaz real permite confirmar/cancelar la renovación, revisar avisos y ejecutar mantenimiento manual. [Reglas y guía](18_RESERVAS_Y_RENOVACIONES.md).
+
+Puerta final: **180 pruebas PHP / 1.195 aserciones en SQLite**, con dos omisiones deliberadas de concurrencia exclusiva de MySQL; **180 pruebas / 1.231 aserciones en MySQL 8.4**, todas aprobadas. Incluye dos procesos simultáneos con una misma clave de renovación. PHPStan, TypeScript, Pint y compilación aprobados. **21 recorridos Playwright aprobados**, más una repetición dirigida del ciclo con el texto final de avisos y restauración del foco. Las últimas ramas de membresía se comprobaron después con las suites PHP completas. [Evidencia](evidence/v3-stage-c.json).
+
+Se corrigió un desfase de fecha civil al renovar: convertir primero un `DATE` de UTC a México restaba un día. La prueba sobre un día de cierre demuestra el cálculo correcto. El diálogo ahora restaura el foco en su alternativa cuando la acción queda desactivada al agotarse las renovaciones. Las capturas de C se guardan en carpetas nuevas, conservando B.
+
+La migración C se aplicó a QA y a la base local tras un nuevo respaldo privado y comparación de tablas históricas, sin seeding. Está activo el servicio local opcional `scheduler`, sin puertos ni cambios globales; se comprobó la tarea horaria declarada y una ejecución manual. No se ha confundido esa comprobación con haber observado todavía su siguiente disparo horario. Los SQL privados no se publican y su restauración sigue pendiente de prueba.
+
 ## Estado de las etapas restantes
 
 | Etapa | Estado actual | Evidencia que se exigirá al cerrar |
 |---|---|---|
 | B: solicitudes, preparación, entrega y devolución | Verificada | Ciclo real, negativas, idempotencia y concurrencia MySQL documentados arriba |
-| C: reservas, renovación, vencimientos y avisos | Pendiente | FIFO, caducidad, calendario con reloj controlado y límites de renovación |
+| C: reservas, renovación, vencimientos y avisos | Verificada | FIFO, caducidad, calendario, límites, avisos y concurrencia de renovación documentados arriba |
 | D: multas, movimientos, pagos, ajustes e informes | Pendiente | Centavos exactos, no duplicación, auditoría y reversión trazable |
 | E: novedades y administración integrada | Pendiente | Fechas diferenciadas, filtros, métricas de BD y operaciones implementadas |
 | F: demo e integración visual | Pendiente | Ciclo completo lector/bibliotecario sin backend, recargas, responsive, accesibilidad y regresión |
 
 Las guías de lector/personal, documentación financiera, nuevas capturas, cobertura funcional y resumen final de commits se completarán con las funciones ejecutadas. No se anuncia un préstamo funcional por disponer únicamente de sus modelos.
+
+Commits de C: `feb267f` tablas de avisos/renovaciones; `0bee5d6` operaciones y controles; `b798ac8` interfaz y navegación por teclado; `d773b18` programador Docker local. La revisión posterior añade cierre de reservas con membresías inactivas y mensajes legibles. La contabilidad pendiente debe conservar y liquidar los periodos de mora **antes** de renovar para que cambiar el vencimiento no borre atrasos anteriores.
 
 ## Git y conservación
 
