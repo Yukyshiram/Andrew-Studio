@@ -32,6 +32,8 @@ export interface Book {
     isbn?: string | null;
     edition?: string | null;
     language?: string;
+    available_copies?: number;
+    total_copies?: number;
 }
 export interface Pagination<T> {
     data: T[];

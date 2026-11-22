@@ -3,9 +3,11 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\CirculationController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LibraryPolicyController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\MyLibraryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Models\AuditEvent;
@@ -31,12 +33,20 @@ Route::middleware('guest')->group(function (): void {
 });
 
 Route::middleware('auth')->group(function (): void {
+    Route::get('/my-library', [MyLibraryController::class, 'index'])->name('my-library');
+    Route::post('/my-library/requests', [MyLibraryController::class, 'store'])->name('my-library.request');
+    Route::post('/my-library/requests/{requestId}/cancel', [MyLibraryController::class, 'cancel'])->whereNumber('requestId')->name('my-library.cancel');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [CatalogController::class, 'dashboard'])->name('dashboard');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'password'])->middleware('throttle:sensitive')->name('profile.password');
     Route::prefix('manage')->name('manage.')->group(function (): void {
+        Route::get('/circulation', [CirculationController::class, 'index'])->name('circulation.index');
+        Route::post('/circulation/requests/{requestId}/prepare', [CirculationController::class, 'prepare'])->whereNumber('requestId')->name('circulation.prepare');
+        Route::post('/circulation/requests/{requestId}/issue', [CirculationController::class, 'issue'])->whereNumber('requestId')->name('circulation.issue');
+        Route::post('/circulation/requests/{requestId}/reject', [CirculationController::class, 'reject'])->whereNumber('requestId')->name('circulation.reject');
+        Route::post('/circulation/loans/{loanId}/receive', [CirculationController::class, 'receive'])->whereNumber('loanId')->name('circulation.receive');
         Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
         Route::post('/inventory', [InventoryController::class, 'store'])->name('inventory.store');
         Route::put('/inventory/{copy}', [InventoryController::class, 'update'])->name('inventory.update');

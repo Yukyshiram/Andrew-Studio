@@ -84,6 +84,12 @@ function NavigationContent({ mobile = false }: { mobile?: boolean }) {
     const { url } = usePage();
     const navigation = [
         {
+            href: "/manage/circulation",
+            icon: BookOpen,
+            label: "Circulación",
+            show: can.manageBooks,
+        },
+        {
             href: "/manage/inventory",
             icon: Library,
             label: "Ejemplares",
@@ -108,7 +114,7 @@ function NavigationContent({ mobile = false }: { mobile?: boolean }) {
             show: true,
         },
         {
-            href: "/dashboard",
+            href: "/my-library",
             icon: LayoutDashboard,
             label: "Mi biblioteca",
             show: !!user,

@@ -39,7 +39,10 @@ class CatalogService
     /** @return Builder<Book> */
     public function query(array $filters, bool $management = false): Builder
     {
-        $query = Book::query();
+        $query = Book::query()->withCount([
+            'copies as total_copies' => fn ($copies) => $copies->where('status', '!=', 'withdrawn'),
+            'copies as available_copies' => fn ($copies) => $copies->where('status', 'available')->whereIn('condition', ['good', 'worn']),
+        ]);
         if ($management && ($filters['status'] ?? '') === 'trash') {
             $query->onlyTrashed();
         }

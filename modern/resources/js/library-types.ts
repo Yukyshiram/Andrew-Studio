@@ -38,3 +38,39 @@ export interface LibraryTerms {
     closure_dates: string[];
     version: number;
 }
+
+export interface CirculationRecord {
+    id: number;
+    book_id: number;
+    member_id: number;
+    book: Book;
+    member?: Member;
+    status:
+        | "pending"
+        | "waiting"
+        | "ready"
+        | "fulfilled"
+        | "rejected"
+        | "cancelled"
+        | "expired";
+    requested_at: string;
+    ready_until: string | null;
+    decision_reason: string | null;
+    allocation: {
+        copy_id: number;
+        copy: Pick<BookCopy, "id" | "barcode" | "location">;
+    } | null;
+}
+export interface Loan {
+    id: number;
+    member_id: number;
+    copy: BookCopy;
+    member?: Member;
+    status: "active" | "returned" | "lost";
+    due_on: string;
+    checked_out_at: string;
+    renewal_count: number;
+    returned_at: string | null;
+    returned_condition: string | null;
+    terms: LibraryTerms;
+}

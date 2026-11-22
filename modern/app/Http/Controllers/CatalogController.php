@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CatalogRequest;
 use App\Models\AuditEvent;
 use App\Models\Book;
+use App\Models\Member;
 use App\Services\CatalogService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,10 +26,16 @@ class CatalogController extends Controller
         return Inertia::render('books/index', $catalog->listing($request->validated()));
     }
 
-    public function show(Book $book): Response
+    public function show(Request $request, Book $book): Response
     {
+        $book->loadCount([
+            'copies as total_copies' => fn ($copies) => $copies->where('status', '!=', 'withdrawn'),
+            'copies as available_copies' => fn ($copies) => $copies->where('status', 'available')->whereIn('condition', ['good', 'worn']),
+        ]);
+
         return Inertia::render('books/show', [
             'book' => $book, 'related' => Book::where('id', '!=', $book->id)->where('category', $book->category)->orderBy('id')->limit(4)->get(),
+            'hasMembership' => $request->user() ? Member::where('user_id', $request->user()->id)->exists() : false,
         ]);
     }
 

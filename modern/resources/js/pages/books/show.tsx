@@ -3,14 +3,17 @@ import { ArrowLeft, Pencil, BookOpen } from "lucide-react";
 import { AppShell } from "../../components/layout";
 import { BookCard, BookCover } from "../../components/books";
 import { InteractiveBook } from "../../components/interactive-book";
+import { BorrowBook } from "../../components/borrow-book";
 import { Badge, Button, Notice } from "../../components/ui";
 import type { Book, SharedProps } from "../../types";
 export default function BookShow({
     book,
     related,
+    hasMembership,
 }: {
     book: Book;
     related: Book[];
+    hasMembership: boolean;
 }) {
     const { can } = usePage<SharedProps>().props;
     return (
@@ -52,12 +55,29 @@ export default function BookShow({
                         Una obra de <strong>{book.author}</strong>
                     </p>
                     <div className="detail-divider" />
-                    <h2>Entre sus páginas.</h2>
+                    <BorrowBook book={book} hasMembership={hasMembership} />
+                    <h2>Descripción</h2>
                     <p className="book-description">
                         {book.description ||
                             "Esta ficha aún no tiene una descripción. Su título es una invitación a descubrirla."}
                     </p>
                     <dl className="book-facts">
+                        {book.isbn && (
+                            <div>
+                                <dt>ISBN</dt>
+                                <dd>{book.isbn}</dd>
+                            </div>
+                        )}
+                        {book.edition && (
+                            <div>
+                                <dt>Edición</dt>
+                                <dd>{book.edition}</dd>
+                            </div>
+                        )}
+                        <div>
+                            <dt>Idioma</dt>
+                            <dd>{book.language ?? "No registrado"}</dd>
+                        </div>
                         <div>
                             <dt>Autor</dt>
                             <dd>{book.author}</dd>

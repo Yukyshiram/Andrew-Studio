@@ -1,5 +1,5 @@
-import { useForm } from "@inertiajs/react";
-import { Badge, Field, Input, SubmitButton } from "./ui";
+import { Link, useForm } from "@inertiajs/react";
+import { Badge, Field, Input, Notice, SubmitButton } from "./ui";
 
 const states: Record<string, string> = {
     available: "Disponible",
@@ -13,9 +13,19 @@ const states: Record<string, string> = {
     damaged: "Dañado",
     active: "Activa",
     suspended: "Suspendida",
+    pending: "Pendiente de validación",
+    waiting: "En lista de espera",
+    ready: "Listo para recoger",
+    fulfilled: "Entregado",
+    cancelled: "Cancelada",
+    rejected: "Rechazada",
+    expired: "Vencida",
+    returned: "Devuelto",
+    overdue: "Préstamo vencido",
+    loan_active: "Préstamo activo",
 };
 export function LibraryStatus({ value }: { value: string }) {
-    return <Badge>{states[value] ?? value}</Badge>;
+    return <Badge className={`library-status library-status-${value}`}>{states[value] ?? value}</Badge>;
 }
 export function LibrarySearch({
     q,
@@ -50,11 +60,47 @@ export function LibrarySearch({
         </form>
     );
 }
-export function libraryDate(value: string | null) {
+export function libraryDate(value: string | null, timezone = "UTC") {
     if (!value) return "Sin fecha";
-    const iso = value.slice(0, 10);
+    const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
     return new Intl.DateTimeFormat("es-MX", {
         dateStyle: "medium",
-        timeZone: "UTC",
-    }).format(new Date(`${iso}T12:00:00Z`));
+        timeZone: dateOnly ? "UTC" : timezone,
+    }).format(new Date(dateOnly ? `${value}T12:00:00Z` : value));
+}
+
+export function LibraryTabs({
+    items,
+    current,
+}: {
+    items: { key: string; label: string; href: string }[];
+    current: string;
+}) {
+    return (
+        <nav className="library-tabs" aria-label="Secciones de biblioteca">
+            {items.map((item) => (
+                <Link
+                    key={item.key}
+                    href={item.href}
+                    aria-current={current === item.key ? "page" : undefined}
+                >
+                    {item.label}
+                </Link>
+            ))}
+        </nav>
+    );
+}
+export function LibraryErrors({
+    errors,
+}: {
+    errors: Record<string, string | undefined>;
+}) {
+    const messages = [...new Set(Object.values(errors).filter(Boolean))];
+    return messages.length ? (
+        <Notice kind="error">
+            {messages.map((message) => (
+                <p key={message}>{message}</p>
+            ))}
+        </Notice>
+    ) : null;
 }

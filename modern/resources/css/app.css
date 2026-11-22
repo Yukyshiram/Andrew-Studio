@@ -1,15 +1,36 @@
 @import "tailwindcss";
 
 .library-form { display: grid; gap: 1.5rem; }
-.library-form .card > h2 { margin-bottom: .75rem; }
-.library-form .card > p { margin-bottom: 1.5rem; }
+.library-form .panel > h2 { margin-bottom: .75rem; }
+.library-form .panel > p { margin-bottom: 1.5rem; }
 .library-search { display: flex; align-items: start; gap: 1rem; margin: 1.75rem 0; }
 .library-search .field { flex: 1; min-width: 0; }
 .library-search > .button { margin-top: 1.8rem; }
 .library-weekdays { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0 1.5rem; }
 .library-weekdays legend { margin-bottom: .75rem; }
 .checkbox-row { display: flex; align-items: center; gap: .6rem; margin-block: .75rem; }
-.checkbox-row input { width: 1.1rem; height: 1.1rem; accent-color: var(--amber); }
+.checkbox-row input { width: 1.1rem; height: 1.1rem; accent-color: var(--brand); }
+.library-account, .library-record-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.library-account, .library-record, .library-form > .panel { padding: clamp(18px, 2vw, 28px); }
+.library-account h2 { margin: .5rem 0; }
+.library-records { display: grid; gap: 1.25rem; margin-block: 1.5rem; }
+.library-record p { margin-top: .75rem; }
+.library-record > .button, .library-actions { margin-top: 1rem; }
+.library-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+.library-record-heading h2 { font-size: 1.5rem; min-width: 0; overflow-wrap: anywhere; }
+.library-metrics { display: flex; flex-wrap: wrap; gap: 1rem; margin-block: 1.5rem; }
+.library-metrics a { flex: 1 1 150px; min-width: 0; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.library-metrics strong { display: block; font-size: 2rem; font-family: Georgia, serif; }
+.library-tabs { display: flex; gap: .75rem; flex-wrap: wrap; margin-block: 1.5rem; border-bottom: 1px solid var(--border); }
+.library-tabs a { display: inline-flex; align-items: center; min-height: 44px; padding: .65rem .75rem; border-bottom: 2px solid transparent; }
+.library-tabs a[aria-current="page"] { border-bottom-color: var(--brand); color: var(--text); }
+.library-context, .book-availability { color: var(--muted); font-size: .875rem; }
+.library-borrow { margin-block: 1.5rem; padding-block: 1.25rem; border-block: 1px solid var(--border); }
+.library-borrow .button { margin-block: .75rem; }
+.library-status-ready, .library-status-returned, .library-status-active, .library-status-loan_active, .library-status-available { color: var(--success); border-color: color-mix(in srgb, var(--success) 45%, var(--border)); }
+.library-status-overdue, .library-status-expired, .library-status-suspended, .library-status-lost { color: var(--error); border-color: color-mix(in srgb, var(--error) 45%, var(--border)); }
+.library-status-pending, .library-status-waiting { color: var(--text); background: color-mix(in srgb, var(--brand) 8%, var(--surface)); }
+@media (max-width: 600px) { .library-metrics { gap: .5rem; } .library-metrics a { flex-basis: 90px; padding: .85rem .65rem; font-size: .8rem; } .library-metrics strong { font-size: 1.65rem; } }
 @media (max-width: 600px) { .library-search { flex-direction: column; } .library-search .field { width: 100%; } .library-search > .button { margin-top: 0; } }
 @source '../js';
 @theme {

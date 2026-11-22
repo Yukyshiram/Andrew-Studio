@@ -15,6 +15,15 @@ export function BookCard({ book }: { book: Book; index?: number }) {
                 <BookCover book={book} />
             </Link>
             <div className="book-card-info">
+                {book.available_copies !== undefined && !book.deleted_at && (
+                    <p className="book-availability">
+                        {book.total_copies === 0
+                            ? "Sin ejemplares incorporados"
+                            : book.available_copies
+                              ? `${book.available_copies} disponibles`
+                              : "No disponible por ahora"}
+                    </p>
+                )}
                 <Badge>{book.category || "General"}</Badge>
                 <h3>
                     <Link href={`/catalog/${book.id}`}>{book.title}</Link>
