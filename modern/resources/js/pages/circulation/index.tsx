@@ -1,6 +1,7 @@
 import { Link, router, useForm } from "@inertiajs/react";
 import { useRef, useState } from "react";
 import { AppShell } from "../../components/layout";
+import { RenewLoanButton } from "../../components/renew-loan";
 import { PaginationLinks } from "../../components/books";
 import {
     LibraryErrors,
@@ -49,6 +50,7 @@ export default function Circulation({
     const [action, setAction] = useState<Action | null>(null);
     const feedbackRef = useRef<HTMLParagraphElement>(null);
     const form = useForm({ reason: "", condition: "good" });
+    const maintenance = useForm({});
     function open(next: Action) {
         form.clearErrors();
         form.reset();
@@ -90,6 +92,20 @@ export default function Circulation({
                 Valida solicitudes, prepara recogidas y registra únicamente las
                 entregas o devoluciones que se han realizado.
             </p>
+            <div className="library-actions">
+                <SubmitButton
+                    variant="ghost"
+                    processing={maintenance.processing}
+                    onClick={() =>
+                        maintenance.post("/manage/circulation/refresh", {
+                            preserveScroll: true,
+                        })
+                    }
+                >
+                    Actualizar reservas vencidas
+                </SubmitButton>
+            </div>
+            <LibraryErrors errors={maintenance.errors} />
             <div className="library-metrics">
                 <Link href="/manage/circulation?view=loans">
                     <strong>{stats.active}</strong>Préstamos activos
@@ -198,9 +214,10 @@ export default function Circulation({
                                     )}
                                     {record.status === "waiting" && (
                                         <p>
-                                            Se asignará el siguiente ejemplar
-                                            disponible respetando las reservas
-                                            anteriores elegibles.
+                                            Posición {record.queue_position}{" "}
+                                            entre las reservas validadas. El
+                                            siguiente ejemplar se asigna a la
+                                            primera persona elegible.
                                         </p>
                                     )}
                                     <div className="library-actions">
@@ -314,6 +331,9 @@ export default function Circulation({
                                                 value={loan.returned_condition}
                                             />
                                         </p>
+                                    )}
+                                    {loan.status === "active" && (
+                                        <RenewLoanButton loan={loan} staff />
                                     )}
                                     {loan.status === "active" && (
                                         <Button

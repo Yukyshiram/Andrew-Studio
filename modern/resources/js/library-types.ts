@@ -54,12 +54,20 @@ export interface CirculationRecord {
         | "cancelled"
         | "expired";
     requested_at: string;
+    queue_position: number;
     ready_until: string | null;
     decision_reason: string | null;
     allocation: {
         copy_id: number;
         copy: Pick<BookCopy, "id" | "barcode" | "location">;
     } | null;
+}
+export interface LibraryNotice {
+    id: number;
+    kind: string;
+    message: string;
+    created_at: string;
+    read_at: string | null;
 }
 export interface Loan {
     id: number;

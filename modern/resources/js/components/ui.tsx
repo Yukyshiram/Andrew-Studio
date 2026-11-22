@@ -243,9 +243,13 @@ export function Dialog({
                 <DialogPrimitive.Content
                     className="dialog-content"
                     onCloseAutoFocus={(event) => {
-                        const target = restoreFocus.current?.isConnected
-                            ? restoreFocus.current
-                            : fallbackFocusRef?.current;
+                        const target =
+                            restoreFocus.current?.isConnected &&
+                            !restoreFocus.current.matches(
+                                ':disabled, [aria-disabled="true"]',
+                            )
+                                ? restoreFocus.current
+                                : fallbackFocusRef?.current;
                         if (target?.isConnected) {
                             event.preventDefault();
                             target.focus({ preventScroll: true });

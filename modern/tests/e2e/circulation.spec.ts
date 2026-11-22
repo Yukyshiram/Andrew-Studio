@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import fs from "node:fs/promises";
 
-test("circulación real: lector solicita, personal prepara y entrega, devuelve y conserva historial", async ({
+test("circulación real: lector solicita, personal entrega, renueva, avisa y devuelve con historial", async ({
     page,
     browser,
     baseURL,
@@ -27,7 +27,9 @@ test("circulación real: lector solicita, personal prepara y entrega, devuelve y
                 external.push(request.url());
         });
     }
-    const folder = "../docs/screenshots/v3/laravel";
+    const folder =
+        process.env.CIRCULATION_SCREENSHOT_DIR ||
+        "../docs/screenshots/v3/laravel";
     await fs.mkdir(folder, { recursive: true });
     try {
         const unique = Date.now();
@@ -173,7 +175,105 @@ test("circulación real: lector solicita, personal prepara y entrega, devuelve y
             fullPage: true,
         });
 
+        const renewalFolder = "../docs/screenshots/v3/renewals";
+        await fs.mkdir(renewalFolder, { recursive: true });
+        await reader
+            .getByRole("button", {
+                name: `Renovar préstamo de ${code}`,
+                exact: true,
+            })
+            .click();
+        await expect(reader.getByRole("dialog")).toBeVisible();
+        await expect(
+            reader.getByRole("button", {
+                name: "Conservar fecha",
+                exact: true,
+            }),
+        ).toBeFocused();
+        await reader
+            .getByRole("button", { name: "Conservar fecha", exact: true })
+            .click();
+        await expect(
+            reader.getByRole("button", {
+                name: `Renovar préstamo de ${code}`,
+                exact: true,
+            }),
+        ).toBeFocused();
+        await reader
+            .getByRole("button", {
+                name: `Renovar préstamo de ${code}`,
+                exact: true,
+            })
+            .click();
+        await reader.screenshot({
+            path: `${renewalFolder}/confirmar-renovacion-movil.png`,
+            fullPage: true,
+        });
+        expect(
+            (
+                await new AxeBuilder({ page: reader })
+                    .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+                    .analyze()
+            ).violations,
+        ).toEqual([]);
+        await reader
+            .getByRole("button", { name: "Confirmar renovación", exact: true })
+            .click();
+        await expect(reader.getByRole("dialog")).toHaveCount(0);
+        await expect(reader.locator(".library-record")).toContainText(
+            "Renovaciones registradas: 1 de 2.",
+        );
+        await reader.reload();
+        await expect(reader.locator(".library-record")).toContainText(
+            "Renovaciones registradas: 1 de 2.",
+        );
+        await reader.getByRole("link", { name: /^Avisos \(3\)$/ }).click();
+        await expect(reader.locator(".library-record")).toHaveCount(3);
+        await expect(
+            reader.getByText(/renovado\. Nuevo vencimiento:/),
+        ).toBeVisible();
+        await reader
+            .getByRole("button", { name: /^Marcar aviso \d+ como leído$/ })
+            .first()
+            .click();
+        await expect(
+            reader.getByRole("link", { name: "Avisos (2)", exact: true }),
+        ).toBeVisible();
+        await expect(reader.getByText("Leído", { exact: true })).toHaveCount(1);
+        await expect(reader.locator(".library-context")).toBeFocused();
+        await reader.screenshot({
+            path: `${renewalFolder}/avisos-lector-movil.png`,
+            fullPage: true,
+        });
+        expect(
+            (
+                await new AxeBuilder({ page: reader })
+                    .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+                    .analyze()
+            ).violations,
+        ).toEqual([]);
+
         await page.goto(`/manage/circulation?view=loans&q=${unique}`);
+        await page
+            .getByRole("button", {
+                name: `Renovar préstamo de ${code}`,
+                exact: true,
+            })
+            .click();
+        await page
+            .getByRole("button", { name: "Confirmar renovación", exact: true })
+            .click();
+        await expect(page.getByRole("dialog")).toHaveCount(0);
+        await expect(page.locator(".library-record")).toContainText(
+            "Renovaciones: 2 de 2.",
+        );
+        await expect(
+            page.getByRole("button", {
+                name: `Renovar préstamo de ${code}`,
+                exact: true,
+            }),
+        ).toBeDisabled();
+        await expect(page.locator(".library-renewal")).toBeFocused();
         await page
             .getByRole("button", {
                 name: `Recibir devolución de ${code}`,

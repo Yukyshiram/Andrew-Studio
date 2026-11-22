@@ -1,6 +1,7 @@
 import { Link, useForm } from "@inertiajs/react";
 import { useRef, useState } from "react";
 import { AppShell } from "../../components/layout";
+import { RenewLoanButton } from "../../components/renew-loan";
 import { PaginationLinks } from "../../components/books";
 import {
     LibraryErrors,
@@ -17,7 +18,12 @@ import {
     Notice,
     SubmitButton,
 } from "../../components/ui";
-import type { CirculationRecord, Loan, Member } from "../../library-types";
+import type {
+    CirculationRecord,
+    LibraryNotice,
+    Loan,
+    Member,
+} from "../../library-types";
 import type { Pagination } from "../../types";
 
 type Membership = Pick<
@@ -28,6 +34,7 @@ export default function MyLibrary({
     member,
     requests,
     loans,
+    notices,
     stats,
     view,
     today,
@@ -36,7 +43,13 @@ export default function MyLibrary({
     member: Membership | null;
     requests: Pagination<CirculationRecord> | null;
     loans: Pagination<Loan> | null;
-    stats: { active: number; overdue: number; requests: number } | null;
+    notices: Pagination<LibraryNotice> | null;
+    stats: {
+        active: number;
+        overdue: number;
+        requests: number;
+        unread: number;
+    } | null;
     view: string;
     today: string;
     timezone: string;
@@ -101,6 +114,11 @@ export default function MyLibrary({
                                 label: "Historial",
                                 href: "/my-library?view=history",
                             },
+                            {
+                                key: "notices",
+                                label: `Avisos (${stats?.unread ?? 0})`,
+                                href: "/my-library?view=notices",
+                            },
                         ]}
                     />
                     <LibraryErrors errors={form.errors} />
@@ -113,6 +131,66 @@ export default function MyLibrary({
                         {timezone}). Solicitar o reservar no confirma una
                         entrega física.
                     </p>
+                    {notices && (
+                        <>
+                            {notices.data.length ? (
+                                <div className="library-records">
+                                    {notices.data.map((notice) => (
+                                        <Card
+                                            key={notice.id}
+                                            className="library-record"
+                                        >
+                                            <div className="library-record-heading">
+                                                <h2>Aviso de la biblioteca</h2>
+                                                <span>
+                                                    {notice.read_at
+                                                        ? "Leído"
+                                                        : "Sin leer"}
+                                                </span>
+                                            </div>
+                                            <p>{notice.message}</p>
+                                            <p>
+                                                {libraryDate(
+                                                    notice.created_at,
+                                                    timezone,
+                                                )}
+                                            </p>
+                                            {!notice.read_at && (
+                                                <SubmitButton
+                                                    variant="ghost"
+                                                    processing={form.processing}
+                                                    aria-label={`Marcar aviso ${notice.id} como leído`}
+                                                    onClick={() =>
+                                                        form.post(
+                                                            `/my-library/notices/${notice.id}/read`,
+                                                            {
+                                                                preserveScroll: true,
+                                                                onSuccess: () =>
+                                                                    feedbackRef.current?.focus(
+                                                                        {
+                                                                            preventScroll: true,
+                                                                        },
+                                                                    ),
+                                                            },
+                                                        )
+                                                    }
+                                                >
+                                                    Marcar como leído
+                                                </SubmitButton>
+                                            )}
+                                        </Card>
+                                    ))}
+                                </div>
+                            ) : (
+                                <EmptyState title="No hay avisos todavía">
+                                    Aquí aparecerán las recogidas preparadas y
+                                    los cambios de tus préstamos. Estos avisos
+                                    son internos; no se envían por correo.
+                                </EmptyState>
+                            )}
+                            <PaginationLinks pagination={notices} />
+                        </>
+                    )}
                     {requests && (
                         <>
                             {requests.data.length ? (
@@ -141,10 +219,13 @@ export default function MyLibrary({
                                             )}
                                             {record.status === "waiting" && (
                                                 <p>
-                                                    No hay un ejemplar asignado.
-                                                    Esperas el siguiente
-                                                    disponible después de las
-                                                    reservas anteriores.
+                                                    Posición{" "}
+                                                    {record.queue_position}{" "}
+                                                    entre las reservas
+                                                    validadas. Se asignará el
+                                                    siguiente ejemplar
+                                                    disponible a la primera
+                                                    persona elegible.
                                                 </p>
                                             )}
                                             {record.status === "ready" && (
@@ -257,6 +338,9 @@ export default function MyLibrary({
                                                 {loan.renewal_count} de{" "}
                                                 {loan.terms.max_renewals}.
                                             </p>
+                                            {loan.status === "active" && (
+                                                <RenewLoanButton loan={loan} />
+                                            )}
                                             {loan.returned_at && (
                                                 <p>
                                                     Cierre:{" "}
