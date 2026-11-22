@@ -436,6 +436,9 @@ final class LegacyMigrationService
     private function assertImportedUsersUnused(array $userIds): void
     {
         foreach (array_chunk($userIds, 500) as $ids) {
+            if (Schema::hasTable('acquisitions') && DB::table('acquisitions')->whereIn('created_by', $ids)->lockForUpdate()->first() !== null) {
+                throw new DomainException('Los usuarios importados tienen adquisiciones registradas a su nombre. La reversión requiere revisión manual.');
+            }
             if (Schema::hasTable('members') && DB::table('members')->whereIn('user_id', $ids)->lockForUpdate()->first() !== null) {
                 throw new DomainException('Los usuarios importados tienen membresías bibliotecarias. La reversión requiere revisión manual.');
             }

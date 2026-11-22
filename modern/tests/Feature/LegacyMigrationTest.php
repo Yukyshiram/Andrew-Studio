@@ -492,7 +492,7 @@ class LegacyMigrationTest extends TestCase
     /** @return array<string, array{string, string}> */
     public static function libraryReferences(): array
     {
-        return ['ejemplar' => ['copy', 'ejemplares'], 'socio' => ['member', 'membresías'], 'solicitud' => ['request', 'circulación'], 'adquisición' => ['acquisition', 'adquisiciones']];
+        return ['ejemplar' => ['copy', 'ejemplares'], 'socio' => ['member', 'membresías'], 'solicitud' => ['request', 'circulación'], 'adquisición' => ['acquisition', 'adquisiciones'], 'responsable de adquisición' => ['acquisition_creator', 'adquisiciones']];
     }
 
     #[DataProvider('libraryReferences')]
@@ -507,6 +507,8 @@ class LegacyMigrationTest extends TestCase
             Member::enroll($user);
         } elseif ($kind === 'acquisition') {
             Acquisition::factory()->create(['book_id' => $book->id]);
+        } elseif ($kind === 'acquisition_creator') {
+            Acquisition::factory()->create(['created_by' => $user->id]);
         } else {
             $reader = User::factory()->create();
             Member::enroll($reader);
