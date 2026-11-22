@@ -96,6 +96,10 @@ test("visitante: inicio, catálogo, búsqueda, filtros, ficha, acerca y ausencia
   await page
     .getByRole("link", { name: "Explorar catálogo", exact: true })
     .click();
+  await expect(page).toHaveURL(/\/catalog$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Catálogo de libros",
+  );
   await expect(page.locator(".book-card")).toHaveCount(8);
   await page.getByRole("button", { name: "Página 2", exact: true }).click();
   await page.reload();
@@ -103,6 +107,9 @@ test("visitante: inicio, catálogo, búsqueda, filtros, ficha, acerca y ausencia
     page.getByRole("button", { name: "Página 2", exact: true }),
   ).toHaveAttribute("aria-current", "page");
   await page.getByRole("button", { name: "Filosofía 4", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Filosofía 4", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator(".book-card")).toHaveCount(4);
   await page
     .getByRole("searchbox", { name: "Buscar por título, autor o editorial" })
@@ -172,10 +179,12 @@ test("administración: entrada secundaria, módulos, ruta anterior y regreso a v
   await page
     .getByRole("link", { name: "Gestionar fichas", exact: true })
     .click();
+  await expect(page).toHaveURL(/\/demo\/admin\/books$/);
   await expect(rows(page)).toHaveCount(8);
   await publicNav(page)
     .getByRole("link", { name: "Resumen", exact: true })
     .click();
+  await expect(page).toHaveURL(/\/demo\/admin$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     "Resumen de la colección",
   );
@@ -304,6 +313,10 @@ test("edición validada, archivo confirmado, cancelación, restauración y estad
     .getByRole("banner")
     .getByRole("link", { name: "Volver a la biblioteca" })
     .click();
+  await expect(page).toHaveURL(/\/catalog$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Catálogo de libros",
+  );
   await expect(
     page.getByRole("link", {
       name: "Ver Una perspectiva renovada",
@@ -613,7 +626,9 @@ test("capturas después: todas las pantallas en escritorio, tablet y móvil", as
   );
   test.setTimeout(90000);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  const folder = path.resolve(process.env.DEMO_SCREENSHOT_DIR || "docs/screenshots/v2.6/after");
+  const folder = path.resolve(
+    process.env.DEMO_SCREENSHOT_DIR || "docs/screenshots/v2.6/after",
+  );
   await fs.mkdir(folder, { recursive: true });
   const sizes: Record<string, unknown> = {};
   async function shot(name: string) {

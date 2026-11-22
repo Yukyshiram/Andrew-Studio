@@ -69,6 +69,10 @@ Las migraciones D se aplicaron a la base local tras respaldo privado, sin seed. 
 
 Commits D: `fb6d6f8` persistencia; `d8b0e2d` cálculo y movimientos; `def5433` rutas, permisos y deuda; `fd228d0` interfaz; `8b1e490` moneda al confirmar; `77b98de` tipos de React compartidos. E y F todavía deben aportar novedades, paneles operativos, datos sintéticos ampliados, circulación estática y cierre de CI/entregables.
 
+Una comprobación adicional de esos tres recorridos en WebKit aprobó con un perfil local explícito de 15 segundos por aserción y 90 por caso: duraciones de 33,1, 24,9 y 24,6 segundos. El perfil normal conserva sus límites originales, sin reintentos ni omisiones añadidas. Este resultado confirma los recorridos con mayor tolerancia temporal; no cierra los fallos de la suite normal ni acredita rendimiento aceptable bajo la presión de memoria observada.
+
+**Cierre de la regresión estática adicional:** la siguiente suite completa con los límites normales terminó con **34 aprobados, dos omisiones de capturas redundantes y cero fallos**, en Chromium, Firefox y WebKit, sin reintentos. Se añadieron comprobaciones explícitas de URL y estado tras navegar. Durante esta ejecución se observaron aproximadamente 3,4 GiB de memoria libre; no se atribuye el resultado a un único cambio. Los resultados anteriores se conservan arriba como diagnóstico, no como estado final. Esta comprobación corresponde todavía a la demo 2.6, no acredita el ciclo estático 3.0 pendiente.
+
 ## Estado de las etapas restantes
 
 | Etapa | Estado actual | Evidencia que se exigirá al cerrar |
