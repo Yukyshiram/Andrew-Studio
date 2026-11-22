@@ -69,6 +69,19 @@ class MigrationRoundtripTest extends TestCase
         $this->assertDatabaseCount('users', 0);
     }
 
+    public function test_acquisitions_can_be_reverted_and_reapplied_without_changing_catalog_or_inventory(): void
+    {
+        $copy = BookCopy::factory()->create();
+        $bookBefore = (array) DB::table('books')->where('id', $copy->book_id)->first();
+        $copyBefore = (array) DB::table('book_copies')->where('id', $copy->id)->first();
+        $migration = require database_path('migrations/2026_11_22_191334_create_acquisitions_table.php');
+        $migration->down();
+        $migration->up();
+        $this->assertSame($bookBefore, (array) DB::table('books')->where('id', $copy->book_id)->first());
+        $this->assertSame($copyBefore, (array) DB::table('book_copies')->where('id', $copy->id)->first());
+        $this->assertDatabaseCount('acquisitions', 0);
+    }
+
     #[TestWith(['isbn', '9780306406157'])]
     #[TestWith(['edition', 'Segunda edición'])]
     #[TestWith(['language', 'English'])]

@@ -464,6 +464,9 @@ final class LegacyMigrationService
     private function assertImportedBooksUnused(array $bookIds): void
     {
         foreach (array_chunk($bookIds, 500) as $ids) {
+            if (Schema::hasTable('acquisitions') && DB::table('acquisitions')->whereIn('book_id', $ids)->lockForUpdate()->first() !== null) {
+                throw new DomainException('Los libros importados tienen adquisiciones registradas. La reversión requiere revisión manual.');
+            }
             if (Schema::hasTable('book_copies') && DB::table('book_copies')->whereIn('book_id', $ids)->lockForUpdate()->first() !== null) {
                 throw new DomainException('Los libros importados tienen ejemplares de inventario. La reversión requiere revisión manual.');
             }

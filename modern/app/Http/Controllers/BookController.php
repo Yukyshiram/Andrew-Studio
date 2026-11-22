@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\BookRequest;
 use App\Http\Requests\CatalogRequest;
+use App\Models\Acquisition;
 use App\Models\AuditEvent;
 use App\Models\Book;
 use App\Models\CirculationRequest;
@@ -77,6 +78,9 @@ class BookController extends Controller
             LibraryPolicy::lockForUpdate()->findOrFail(1);
             $current = Book::lockForUpdate()->findOrFail($book->id);
             Gate::forUser(User::findOrFail(auth()->id()))->authorize('delete', $current);
+            if ($current->acquisitions()->whereIn('status', Acquisition::OPEN)->exists()) {
+                throw ValidationException::withMessages(['book' => 'Cierra o cancela las adquisiciones pendientes de este título antes de archivarlo.']);
+            }
             if (CirculationRequest::where('book_id', $current->id)->whereIn('status', CirculationRequest::OPEN)->exists()
                 || Loan::where('status', 'active')->whereHas('copy', fn ($copy) => $copy->where('book_id', $current->id))->exists()) {
                 throw ValidationException::withMessages(['book' => 'Cierra las solicitudes y préstamos de este título antes de archivarlo.']);
@@ -109,6 +113,9 @@ class BookController extends Controller
         $count = DB::transaction(function (): int {
             LibraryPolicy::lockForUpdate()->findOrFail(1);
             Gate::forUser(User::findOrFail(auth()->id()))->authorize('archiveAll', Book::class);
+            if (Acquisition::whereIn('status', Acquisition::OPEN)->exists()) {
+                throw ValidationException::withMessages(['confirmation' => 'No se puede archivar el catálogo mientras existan adquisiciones pendientes.']);
+            }
             if (CirculationRequest::whereIn('status', CirculationRequest::OPEN)->exists() || Loan::where('status', 'active')->exists()) {
                 throw ValidationException::withMessages(['confirmation' => 'No se puede archivar el catálogo mientras existan solicitudes o préstamos abiertos.']);
             }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Acquisition;
 use App\Models\AuditEvent;
 use App\Models\Book;
 use App\Models\BookCopy;
@@ -491,7 +492,7 @@ class LegacyMigrationTest extends TestCase
     /** @return array<string, array{string, string}> */
     public static function libraryReferences(): array
     {
-        return ['ejemplar' => ['copy', 'ejemplares'], 'socio' => ['member', 'membresías'], 'solicitud' => ['request', 'circulación']];
+        return ['ejemplar' => ['copy', 'ejemplares'], 'socio' => ['member', 'membresías'], 'solicitud' => ['request', 'circulación'], 'adquisición' => ['acquisition', 'adquisiciones']];
     }
 
     #[DataProvider('libraryReferences')]
@@ -504,6 +505,8 @@ class LegacyMigrationTest extends TestCase
             BookCopy::factory()->create(['book_id' => $book->id]);
         } elseif ($kind === 'member') {
             Member::enroll($user);
+        } elseif ($kind === 'acquisition') {
+            Acquisition::factory()->create(['book_id' => $book->id]);
         } else {
             $reader = User::factory()->create();
             Member::enroll($reader);

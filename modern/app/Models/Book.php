@@ -24,4 +24,10 @@ class Book extends Model
     {
         return $this->hasMany(BookCopy::class);
     }
+
+    /** @return HasMany<Acquisition, $this> */
+    public function acquisitions(): HasMany
+    {
+        return $this->hasMany(Acquisition::class);
+    }
 }
