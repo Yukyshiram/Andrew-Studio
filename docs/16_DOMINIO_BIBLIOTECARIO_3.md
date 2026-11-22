@@ -8,7 +8,7 @@ Referencias que deben permanecer intactas: `main`, `origin/main`, `archive/legac
 
 ## Investigación y situación existente
 
-En la inspección inicial de 2.6 se revisaron modelos, migraciones, servicios, políticas, controladores, rutas, tipos React y pruebas. En ese punto `books` describía títulos y `users` identificaba cuentas con roles reader/librarian/admin; no existían ejemplares, préstamos, socios bibliotecarios, reservas ni contabilidad. La demo permitía editar fichas únicamente en memoria. No se atribuyen funciones de circulación a la versión anterior. El avance real de A–C está en [Implementación](17_IMPLEMENTACION_3.md), y las reglas ejecutadas de reservas en [Etapa C](18_RESERVAS_Y_RENOVACIONES.md); tesorería, novedades y circulación estática siguen pendientes.
+En la inspección inicial de 2.6 se revisaron modelos, migraciones, servicios, políticas, controladores, rutas, tipos React y pruebas. En ese punto `books` describía títulos y `users` identificaba cuentas con roles reader/librarian/admin; no existían ejemplares, préstamos, socios bibliotecarios, reservas ni contabilidad. La demo permitía editar fichas únicamente en memoria. No se atribuyen funciones de circulación a la versión anterior. El avance real de A–E está en [Implementación](17_IMPLEMENTACION_3.md), las reservas en [Etapa C](18_RESERVAS_Y_RENOVACIONES.md), tesorería en [Etapa D](19_TESORERIA_Y_MOVIMIENTOS.md) y novedades/paneles en [Etapa E](20_NOVEDADES_Y_PANELES.md). La circulación estática se integra y verifica por separado en F.
 
 Referencias primarias consultadas el 21/11/2026:
 
@@ -51,7 +51,7 @@ Todos los importes son centavos enteros. Cargos positivos; pagos/abonos negativo
 
 ### Novedades
 
-Fecha de publicación editorial, llegada estimada e incorporación efectiva son campos distintos. Estados: anunciada, solicitada, en tránsito, incorporada o cancelada. Una llegada estimada nunca crea ejemplares automáticamente; el inventario se registra explícitamente. Filtros por categoría/fecha. Datos de demo identificados como ficticios.
+Fecha de publicación editorial, llegada estimada e incorporación efectiva son campos distintos. Estados implementados: anunciado (`announced`), pedido (`ordered`), en camino (`in_transit`), incorporado (`incorporated`) y cancelado (`cancelled`). Una llegada estimada nunca crea ejemplares automáticamente; el inventario se registra explícitamente. Filtros por categoría/fecha. Datos de demo identificados como ficticios. Las altas son idempotentes y las ediciones comprueban su versión. Los lotes cerrados no reabren su estado; conservan correcciones auditadas de metadatos. [Guía de novedades y paneles](20_NOVEDADES_Y_PANELES.md).
 
 ## Modelo previsto
 
@@ -74,6 +74,7 @@ erDiagram
     FINANCIAL_ENTRIES |o--o| FINANCIAL_ENTRIES : revierte
     MEMBERS ||--o{ LIBRARY_NOTICES : recibe
     BOOKS ||--o{ ACQUISITIONS : anticipa
+    USERS ||--o{ ACQUISITIONS : registra
     USERS |o--o{ AUDIT_EVENTS : ejecuta
 ```
 

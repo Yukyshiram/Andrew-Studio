@@ -73,6 +73,22 @@ Una comprobación adicional de esos tres recorridos en WebKit aprobó con un per
 
 **Cierre de la regresión estática adicional:** la siguiente suite completa con los límites normales terminó con **34 aprobados, dos omisiones de capturas redundantes y cero fallos**, en Chromium, Firefox y WebKit, sin reintentos. Se añadieron comprobaciones explícitas de URL y estado tras navegar. Durante esta ejecución se observaron aproximadamente 3,4 GiB de memoria libre; no se atribuye el resultado a un único cambio. Los resultados anteriores se conservan arriba como diagnóstico, no como estado final. Esta comprobación corresponde todavía a la demo 2.6, no acredita el ciclo estático 3.0 pendiente.
 
+## Etapa E verificada
+
+Se implementaron novedades públicas con búsqueda, categorías, estados, filtros por la fecha elegida y paginación. Publicación editorial, llegada estimada e incorporación real permanecen separadas. El personal registra y modifica lotes con auditoría, idempotencia y versiones; una llegada confirmada exige inventario previo. Las notas se escapan como texto. Los lotes cancelados y los títulos archivados se excluyen del listado público. Las adquisiciones abiertas impiden archivar su ficha, y las referencias al libro y al responsable impiden revertir un lote importado en uso. [Guía](20_NOVEDADES_Y_PANELES.md).
+
+Los paneles muestran datos reales de su base: cuenta propia para el lector, circulación e incorporaciones para biblioteca y cifras financieras para administración. No generan movimientos al consultarse ni envían información financiera global a otros perfiles. El día lo calcula el servidor con la zona de la biblioteca. Se conserva el catálogo reciente con el nombre **Últimas fichas catalogadas**, separado de las llegadas físicas. El enlace **Panel** permite volver desde otros módulos.
+
+La muestra `LibraryDemoSeeder` exige un entorno local/de pruebas explícitamente habilitado y una base sintética nueva. Contiene inventario, circulación, mora/pago parcial ficticios y novedades coherentes. El seeding normal ya no crea una cuenta genérica; producción, datos existentes, identificadores legados, cuentas modificadas y políticas en uso quedan protegidos. Repetir la muestra instalada no reinicia datos. Sus relojes temporales se restauran. No se sembró la base local ni la QA acumulada: se probó en las bases aisladas.
+
+Puerta final: **276 pruebas PHP / 1.869 aserciones en SQLite** (272 aprobadas y cuatro omisiones exclusivas de procesos MySQL); **276 pruebas / 1.929 aserciones en MySQL 8.4**, todas aprobadas. PHPStan incluyó aplicación y seeder; Pint, TypeScript y build aprobados. **23 recorridos Playwright nativos aprobados**, **tres nuevos en Chromium/Firefox/WebKit** con temas claro/oscuro, foco, móvil e inventario, y **seis anteriores de circulación/tesorería en esos motores**. Tras separar CSS y añadir Panel volvió a pasar la suite completa de 23 y la matriz nueva de tres. [Evidencia](evidence/v3-stage-e.json).
+
+Los estilos nuevos se cargan por vista: CSS de noticias compartido con la futura demo y CSS del panel diferido; la hoja global anterior queda intacta. Las capturas de E están en `screenshots/v3/acquisitions/` y `acquisitions-smoke/`. La demo 2.6 volvió a compilar y pasó el escaneo heurístico de secretos/archivos privados. La referencia de auditorías de dependencias sigue siendo D, sin dependencias nuevas en E; se repetirá al integrar F.
+
+La migración E se aplicó a la base local con respaldo privado, comparación de columnas históricas y sin seeding. El respaldo real continúa sin prueba de restauración. Se verificaron de nuevo los 34 archivos frente a la base 2.6, la licencia y las referencias protegidas: [conservación](evidence/v3-preservation-after-acquisitions.json). No hubo push, merge ni despliegue.
+
+Commits E: `4590b24` modelo/operaciones; `ce93958` responsable de adquisición y reversión; `f3f15e4` muestra protegida; `f91fe4f` novedades/gestión; `b77fc7e` paneles y recorridos. F sigue pendiente: la demo pública todavía no reproduce la circulación 3.0. Ya se preparó una medición reproducible de su referencia previa; no mide FPS físicos ni sustituye el ciclo funcional.
+
 ## Estado de las etapas restantes
 
 | Etapa | Estado actual | Evidencia que se exigirá al cerrar |
@@ -80,8 +96,8 @@ Una comprobación adicional de esos tres recorridos en WebKit aprobó con un per
 | B: solicitudes, preparación, entrega y devolución | Verificada | Ciclo real, negativas, idempotencia y concurrencia MySQL documentados arriba |
 | C: reservas, renovación, vencimientos y avisos | Verificada | FIFO, caducidad, calendario, límites, avisos y concurrencia de renovación documentados arriba |
 | D: multas, movimientos, pagos, ajustes e informes | Verificada | Enteros, idempotencia, permisos, historial, reversión y concurrencia MySQL documentados arriba |
-| E: novedades y administración integrada | Pendiente | Fechas diferenciadas, filtros, métricas de BD y operaciones implementadas |
-| F: demo e integración visual | Pendiente | Ciclo completo lector/bibliotecario sin backend, recargas, responsive, accesibilidad y regresión |
+| E: novedades y administración integrada | Verificada | Fechas separadas, incorporación con inventario, filtros, privacidad, métricas de BD y muestra protegida comprobadas arriba |
+| F: demo e integración visual | En preparación | Falta implementar el ciclo completo lector/bibliotecario sin backend, integrar CI/guías y verificar recargas, responsive, accesibilidad, rendimiento y regresión |
 
 Las guías de lector/personal, documentación financiera, nuevas capturas, cobertura funcional y resumen final de commits se completarán con las funciones ejecutadas. No se anuncia un préstamo funcional por disponer únicamente de sus modelos.
 
