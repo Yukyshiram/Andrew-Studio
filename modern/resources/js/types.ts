@@ -29,6 +29,9 @@ export interface Book {
     updated_at: string;
     deleted_at?: string | null;
     legacy_id?: number | null;
+    isbn?: string | null;
+    edition?: string | null;
+    language?: string;
 }
 export interface Pagination<T> {
     data: T[];

@@ -3,11 +3,20 @@
 namespace App\Http\Requests;
 
 use App\Models\Book;
+use App\Rules\Isbn;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class BookRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->input('isbn'))) {
+            $isbn = strtoupper(str_replace(['-', ' '], '', $this->input('isbn')));
+            $this->merge(['isbn' => $isbn === '' ? null : $isbn]);
+        }
+    }
+
     public function authorize(): bool
     {
         return $this->route('book')
@@ -22,6 +31,9 @@ class BookRequest extends FormRequest
             'publisher' => ['required', 'string', 'max:255'], 'publication_year' => ['required', 'string', 'max:50'],
             'description' => ['nullable', 'string', 'max:10000'],
             'category' => ['required', Rule::in(Book::CATEGORIES)], 'cover_color' => ['required', Rule::in(Book::COLORS)],
+            'isbn' => ['nullable', 'string', new Isbn],
+            'edition' => ['nullable', 'string', 'max:100'],
+            'language' => ['sometimes', 'required', 'string', 'max:80'],
         ];
     }
 

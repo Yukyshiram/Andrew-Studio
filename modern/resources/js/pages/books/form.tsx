@@ -36,6 +36,9 @@ export default function BookForm({
         description: book?.description ?? "",
         category: book?.category ?? "General",
         cover_color: book?.cover_color ?? "olive",
+        isbn: book?.isbn ?? "",
+        edition: book?.edition ?? "",
+        language: book?.language ?? "Español",
     });
     function submit(e: React.FormEvent) {
         e.preventDefault();
@@ -170,6 +173,34 @@ export default function BookForm({
                                     ))}
                                 </Select>
                             </Field>
+                            {(
+                                [
+                                    ["isbn", "ISBN (opcional)", 24],
+                                    ["edition", "Edición (opcional)", 100],
+                                    ["language", "Idioma *", 80],
+                                ] as const
+                            ).map(([key, label, max]) => (
+                                <Field
+                                    key={key}
+                                    id={key}
+                                    label={label}
+                                    error={form.errors[key]}
+                                >
+                                    <Input
+                                        id={key}
+                                        value={form.data[key]}
+                                        maxLength={max}
+                                        required={key === "language"}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                key,
+                                                event.target.value,
+                                            )
+                                        }
+                                        {...fieldA11y(key, form.errors[key])}
+                                    />
+                                </Field>
+                            ))}
                             <Field
                                 label="Descripción"
                                 id="description"
