@@ -12,6 +12,7 @@
     "build": "node demo/scripts/licenses.mjs && tsc --noEmit -p demo/tsconfig.json && vite build --config demo/vite.config.ts",
     "preview": "vite preview --config demo/vite.config.ts --host 127.0.0.1 --port 4173",
     "typecheck": "tsc --noEmit -p demo/tsconfig.json",
+    "test:domain": "tsc --noEmit -p demo/tsconfig.tests.json && node --experimental-strip-types --test demo/tests/domain.test.ts",
     "test": "node demo/scripts/playwright.mjs test",
     "test:install": "node demo/scripts/playwright.mjs install chromium firefox webkit",
     "security:check": "node demo/scripts/security.mjs"

@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "allowImportingTsExtensions": true },
+  "include": ["tests/domain.test.ts", "src/library-domain.ts"]
+}
