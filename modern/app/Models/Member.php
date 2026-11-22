@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
 use Database\Factories\MemberFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/** @property CarbonImmutable|null $expires_on */
 class Member extends Model
 {
     /** @use HasFactory<MemberFactory> */
@@ -30,5 +33,17 @@ class Member extends Model
         return self::firstOrCreate(['user_id' => $user->id], [
             'card_number' => 'SOC-'.str_pad((string) $user->id, 12, '0', STR_PAD_LEFT),
         ]);
+    }
+
+    /** @return HasMany<CirculationRequest, $this> */
+    public function requests(): HasMany
+    {
+        return $this->hasMany(CirculationRequest::class);
+    }
+
+    /** @return HasMany<Loan, $this> */
+    public function loans(): HasMany
+    {
+        return $this->hasMany(Loan::class);
     }
 }

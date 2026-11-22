@@ -60,11 +60,16 @@ class LibraryFoundationTest extends TestCase
     {
         $book = Book::factory()->create(['title' => 'Título conservado']);
         $user = User::factory()->create();
-        $migration = require database_path('migrations/2026_11_22_022905_extend_bibliography_and_create_inventory.php');
-        $migration->down();
+        $files = array_filter(glob(database_path('migrations/*.php')), fn (string $file): bool => basename($file) >= '2026_11_22_022905_extend_bibliography_and_create_inventory.php');
+        sort($files);
+        foreach (array_reverse($files) as $file) {
+            (require $file)->down();
+        }
         $this->assertDatabaseHas('books', ['id' => $book->id, 'title' => 'Título conservado']);
         $this->assertDatabaseHas('users', ['id' => $user->id]);
-        $migration->up();
+        foreach ($files as $file) {
+            (require $file)->up();
+        }
         $this->assertSame('Español', $book->fresh()->language);
         $this->assertSame(0, $book->copies()->count());
     }
