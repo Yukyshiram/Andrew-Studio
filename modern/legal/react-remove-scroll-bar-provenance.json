@@ -1,0 +1,9 @@
+{
+  "installed_version": "2.3.8",
+  "installed_package_omits_license_file": true,
+  "license_sha256": "a79aae0c0f21990d9d963bb3c5a79cdcea9a46f8523ba55c58d7fe776b6ebc84",
+  "package": "react-remove-scroll-bar",
+  "upstream_notice_source": "https://raw.githubusercontent.com/theKashey/react-remove-scroll-bar/7301c160fda44cb8cf2b9fdfde61efad35736196/LICENSE",
+  "metadata_license": "MIT",
+  "note": "El archivo de aviso falta en el paquete npm y en su gitHead. Se conserva el texto MIT del repositorio oficial, fijado al commit que añadió la licencia; no se presenta como archivo incluido por npm."
+}

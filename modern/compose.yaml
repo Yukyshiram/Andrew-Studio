@@ -1,0 +1,66 @@
+name: bibliotecary-v2
+services:
+  app:
+    build: .
+    healthcheck: &app-healthcheck
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1/up') === false ? 1 : 0);"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+    ports:
+      - "127.0.0.1:${APP_PORT:-8081}:80"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      MAIL_HOST: mailpit
+    volumes:
+      - .:/var/www/html
+      - modern_vendor:/var/www/html/vendor
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-bibliotecary_v2}
+      MYSQL_USER: ${DB_USERNAME:-bibliotecary}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Ejecuta scripts/install.ps1 para generar la configuración local}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Falta DB_ROOT_PASSWORD en .env}
+    volumes:
+      - modern_database:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysql -h 127.0.0.1 -u\"$$MYSQL_USER\" -D\"$$MYSQL_DATABASE\" -e 'SELECT 1' >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    restart: unless-stopped
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports:
+      - "127.0.0.1:${MAIL_UI_PORT:-8026}:8025"
+    restart: unless-stopped
+  app-e2e:
+    profiles: [qa]
+    image: bibliotecary-v2-app
+    healthcheck: *app-healthcheck
+    ports:
+      - "127.0.0.1:8082:80"
+    environment:
+      APP_ENV: local
+      APP_URL: http://localhost:8082
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /var/www/html/storage/app/private/e2e.sqlite
+      SESSION_COOKIE: bibliotecary_e2e_session
+      MAIL_HOST: mailpit
+      DEMO_SEED_ENABLED: "true"
+    volumes:
+      - .:/var/www/html
+      - modern_vendor:/var/www/html/vendor
+    depends_on:
+      - mailpit
+volumes:
+  modern_database:
+  modern_vendor:
