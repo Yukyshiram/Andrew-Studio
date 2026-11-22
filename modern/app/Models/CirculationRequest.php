@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -15,6 +16,20 @@ class CirculationRequest extends Model
     public const STATES = ['pending', 'waiting', 'ready', 'fulfilled', 'rejected', 'cancelled', 'expired'];
 
     protected $guarded = ['id'];
+
+    /** @param Builder<static> $query */
+    public function scopeWithQueuePosition(Builder $query): void
+    {
+        $query->select('circulation_requests.*')->selectSub(
+            self::query()->from('circulation_requests as queued')->selectRaw('count(*) + 1')
+                ->whereColumn('queued.book_id', 'circulation_requests.book_id')->where('queued.status', 'waiting')
+                ->where(fn ($ahead) => $ahead->whereColumn('queued.priority', '<', 'circulation_requests.priority')
+                    ->orWhere(fn ($samePriority) => $samePriority->whereColumn('queued.priority', 'circulation_requests.priority')
+                        ->where(fn ($order) => $order->whereColumn('queued.requested_at', '<', 'circulation_requests.requested_at')
+                            ->orWhere(fn ($sameDate) => $sameDate->whereColumn('queued.requested_at', 'circulation_requests.requested_at')->whereColumn('queued.id', '<', 'circulation_requests.id'))))),
+            'queue_position',
+        );
+    }
 
     protected function casts(): array
     {

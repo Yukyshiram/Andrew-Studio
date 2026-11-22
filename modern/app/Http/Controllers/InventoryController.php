@@ -8,6 +8,7 @@ use App\Models\Book;
 use App\Models\BookCopy;
 use App\Models\LibraryPolicy;
 use App\Models\User;
+use App\Services\CirculationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,21 +35,22 @@ class InventoryController extends Controller
         ]);
     }
 
-    public function store(InventoryRequest $request): RedirectResponse
+    public function store(InventoryRequest $request, CirculationService $service): RedirectResponse
     {
-        DB::transaction(function () use ($request): void {
+        DB::transaction(function () use ($request, $service): void {
             LibraryPolicy::lockForUpdate()->findOrFail(1);
             Gate::forUser(User::findOrFail($request->user()->id))->authorize('circulate');
             $copy = BookCopy::create($request->validated());
             AuditEvent::record('copy.created', $copy);
+            $service->refreshReservations($request->user(), $copy->book_id);
         });
 
         return back()->with('success', 'Ejemplar incorporado al inventario.');
     }
 
-    public function update(InventoryRequest $request, BookCopy $copy): RedirectResponse
+    public function update(InventoryRequest $request, BookCopy $copy, CirculationService $service): RedirectResponse
     {
-        DB::transaction(function () use ($request, $copy): void {
+        DB::transaction(function () use ($request, $copy, $service): void {
             LibraryPolicy::lockForUpdate()->findOrFail(1);
             Gate::forUser(User::findOrFail($request->user()->id))->authorize('circulate');
             $fresh = BookCopy::lockForUpdate()->findOrFail($copy->id);
@@ -57,6 +59,7 @@ class InventoryController extends Controller
             }
             $fresh->update($request->validated());
             AuditEvent::record('copy.updated', $fresh, ['before' => $copy->only(['status', 'condition']), 'after' => $fresh->only(['status', 'condition'])]);
+            $service->refreshReservations($request->user(), $fresh->book_id);
         });
 
         return back()->with('success', 'Inventario actualizado.');

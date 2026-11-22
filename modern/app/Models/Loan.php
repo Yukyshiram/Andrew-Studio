@@ -6,7 +6,10 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** @property CarbonImmutable $due_on */
+/**
+ * @property CarbonImmutable $due_on
+ * @property array<string, mixed> $terms
+ */
 class Loan extends Model
 {
     protected $guarded = ['id'];

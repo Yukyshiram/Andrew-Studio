@@ -20,7 +20,7 @@ class LibraryCalendar
 
     public function dueDate(CarbonImmutable $from, int $days, array $terms): string
     {
-        $day = $from->setTimezone($terms['timezone'])->startOfDay()->addDays($days);
+        $day = CarbonImmutable::parse($from->toDateString(), $terms['timezone'])->startOfDay()->addDays($days);
         for ($attempt = 0; $attempt < 3660; $attempt++) {
             if ($this->isOpen($day, $terms)) {
                 return $day->toDateString();

@@ -9,6 +9,7 @@ use App\Http\Controllers\LibraryPolicyController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MyLibraryController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RenewalController;
 use App\Http\Controllers\UserController;
 use App\Models\AuditEvent;
 use Illuminate\Http\Request;
@@ -34,6 +35,8 @@ Route::middleware('guest')->group(function (): void {
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/my-library', [MyLibraryController::class, 'index'])->name('my-library');
+    Route::post('/my-library/loans/{loanId}/renew', [RenewalController::class, 'store'])->whereNumber('loanId')->name('my-library.renew');
+    Route::post('/my-library/notices/{noticeId}/read', [MyLibraryController::class, 'readNotice'])->whereNumber('noticeId')->name('my-library.notices.read');
     Route::post('/my-library/requests', [MyLibraryController::class, 'store'])->name('my-library.request');
     Route::post('/my-library/requests/{requestId}/cancel', [MyLibraryController::class, 'cancel'])->whereNumber('requestId')->name('my-library.cancel');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -43,6 +46,8 @@ Route::middleware('auth')->group(function (): void {
     Route::put('/profile/password', [ProfileController::class, 'password'])->middleware('throttle:sensitive')->name('profile.password');
     Route::prefix('manage')->name('manage.')->group(function (): void {
         Route::get('/circulation', [CirculationController::class, 'index'])->name('circulation.index');
+        Route::post('/circulation/refresh', [CirculationController::class, 'refresh'])->middleware('can:circulate')->name('circulation.refresh');
+        Route::post('/circulation/loans/{loanId}/renew', [RenewalController::class, 'store'])->whereNumber('loanId')->middleware('can:circulate')->name('circulation.renew');
         Route::post('/circulation/requests/{requestId}/prepare', [CirculationController::class, 'prepare'])->whereNumber('requestId')->name('circulation.prepare');
         Route::post('/circulation/requests/{requestId}/issue', [CirculationController::class, 'issue'])->whereNumber('requestId')->name('circulation.issue');
         Route::post('/circulation/requests/{requestId}/reject', [CirculationController::class, 'reject'])->whereNumber('requestId')->name('circulation.reject');

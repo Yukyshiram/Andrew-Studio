@@ -28,7 +28,7 @@ class CirculationController extends Controller
         ]);
         $view = $filters['view'] ?? 'requests';
         $today = $calendar->today(LibraryPolicy::current()->terms())->toDateString();
-        $requests = CirculationRequest::with(['book', 'member.user:id,name,email', 'allocation.copy'])->whereIn('status', ! empty($filters['status']) ? [$filters['status']] : CirculationRequest::OPEN)
+        $requests = CirculationRequest::withQueuePosition()->with(['book', 'member.user:id,name,email', 'allocation.copy'])->whereIn('status', ! empty($filters['status']) ? [$filters['status']] : CirculationRequest::OPEN)
             ->when($filters['q'] ?? '', fn ($query, $q) => $query->where(fn ($query) => $query->whereHas('book', fn ($book) => $book->where('title', 'like', '%'.$q.'%'))->orWhereHas('member', fn ($member) => $member->where('card_number', 'like', '%'.$q.'%')->orWhereHas('user', fn ($user) => $user->where('name', 'like', '%'.$q.'%')))));
         $loans = Loan::with(['copy.book', 'member.user:id,name,email'])->when($view === 'history', fn ($query) => $query->where('status', '!=', 'active'), fn ($query) => $query->where('status', 'active'))
             ->when($filters['q'] ?? '', fn ($query, $q) => $query->where(fn ($query) => $query->whereHas('copy', fn ($copy) => $copy->where('barcode', 'like', '%'.$q.'%')->orWhereHas('book', fn ($book) => $book->where('title', 'like', '%'.$q.'%')))->orWhereHas('member', fn ($member) => $member->where('card_number', 'like', '%'.$q.'%')->orWhereHas('user', fn ($user) => $user->where('name', 'like', '%'.$q.'%')))));
@@ -46,6 +46,13 @@ class CirculationController extends Controller
                 'available' => BookCopy::where('status', 'available')->whereHas('book', fn ($book) => $book->whereNull('deleted_at'))->count(),
             ],
         ]);
+    }
+
+    public function refresh(Request $request, CirculationService $service): RedirectResponse
+    {
+        $result = $service->refreshReservations($request->user());
+
+        return back()->with('success', 'Recogidas vencidas: '.$result['expired'].'. Nuevos ejemplares preparados: '.$result['ready'].'.');
     }
 
     public function prepare(Request $request, int $requestId, CirculationService $service): RedirectResponse

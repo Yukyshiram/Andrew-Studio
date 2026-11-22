@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\CirculationService;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Process\Process;
 use Tests\TestCase;
@@ -31,15 +32,16 @@ class MySqlCirculationConcurrencyTest extends TestCase
         $this->assertSame('bibliotecary_v3_qa', DB::connection()->getDatabaseName());
     }
 
-    /** @param list<array{string, int, int}> $jobs @return list<array{id: int, status: string}> */
+    /** @param list<array{0: string, 1: int, 2: int, 3?: string}> $jobs @return list<array{id: int, status: string}> */
     private function concurrently(array $jobs): array
     {
         $processes = [];
         DB::beginTransaction();
         LibraryPolicy::lockForUpdate()->findOrFail(1);
         try {
-            foreach ($jobs as [$action, $actor, $request]) {
-                $process = new Process([PHP_BINARY, base_path('tests/Support/circulation-worker.php'), $action, (string) $actor, (string) $request], base_path(), timeout: 20);
+            foreach ($jobs as $job) {
+                [$action, $actor, $request] = $job;
+                $process = new Process([PHP_BINARY, base_path('tests/Support/circulation-worker.php'), $action, (string) $actor, (string) $request, $job[3] ?? ''], base_path(), timeout: 20);
                 $process->start();
                 $processes[] = $process;
                 $this->assertTrue($process->waitUntil(fn (string $type, string $output): bool => $type === Process::OUT && str_contains($output, 'ready')), $process->getErrorOutput());
@@ -66,6 +68,26 @@ class MySqlCirculationConcurrencyTest extends TestCase
                 }
             }
         }
+    }
+
+    public function test_simultaneous_retries_extend_a_loan_only_once(): void
+    {
+        $staff = User::factory()->create(['role' => 'librarian']);
+        $reader = User::factory()->create();
+        Member::enroll($reader);
+        $copy = BookCopy::factory()->create();
+        $service = app(CirculationService::class);
+        $request = $service->requestBook($reader, $copy->book_id);
+        $service->prepare($staff, $request->id);
+        $loan = $service->issue($staff, $request->id);
+        $key = (string) Str::uuid();
+        $results = $this->concurrently([['renew', $reader->id, $loan->id, $key], ['renew', $reader->id, $loan->id, strtoupper($key)]]);
+        $this->assertSame($results[0]['id'], $results[1]['id']);
+        $this->assertSame(1, $loan->fresh()->renewal_count);
+        $this->assertDatabaseCount('loan_renewals', 1);
+        $this->assertDatabaseHas('loans', ['id' => $loan->id, 'status' => 'active', 'active_copy_id' => $copy->id]);
+        $this->assertSame(1, AuditEvent::where('action', 'loan.renewed')->count());
+        $this->assertDatabaseHas('library_notices', ['member_id' => $loan->member_id, 'event_key' => 'loan.renewed:'.$results[0]['id']]);
     }
 
     public function test_simultaneous_preparations_and_deliveries_preserve_one_copy_and_one_loan(): void
