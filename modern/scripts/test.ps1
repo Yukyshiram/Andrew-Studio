@@ -1,4 +1,4 @@
-param([switch]$SkipBrowsers, [switch]$KeepTestServer)
+param([switch]$SkipBrowsers, [switch]$KeepTestServer, [switch]$SkipMySQL)
 $ErrorActionPreference = 'Stop'
 $qaStarted = $false
 Push-Location ([IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..')))
@@ -8,7 +8,8 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "La comprobación anterior falló con código $LASTEXITCODE." }
     }
     Run-Step { docker compose exec -T app php artisan test --compact }
-    Run-Step { docker compose exec -T app vendor/bin/phpstan analyse --no-progress --memory-limit=512M }
+    if (-not $SkipMySQL) { & (Join-Path $PSScriptRoot 'test-mysql.ps1') }
+    Run-Step { docker compose exec -T app vendor/bin/phpstan analyse app database/seeders/LibraryDemoSeeder.php --no-progress --memory-limit=512M }
     Run-Step { npm run typecheck }
     Run-Step { npm run build }
     Run-Step { docker compose exec -T app composer audit }

@@ -39,7 +39,7 @@ test("incorporaciones reales: anuncio, fechas públicas, inventario, llegada y p
     const visitor = await visitorContext.newPage();
     const errors: string[] = [];
     const external: string[] = [];
-    const folder = `../docs/screenshots/v3/acquisitions/${browserName}`;
+    const folder = `${process.env.ACQUISITION_SCREENSHOT_DIR || "output/playwright/acquisitions"}/${browserName}`;
     await fs.mkdir(folder, { recursive: true });
     for (const surface of [page, visitor]) {
         surface.on("pageerror", (error) => errors.push(error.message));
