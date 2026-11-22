@@ -53,19 +53,35 @@ Se corrigió un desfase de fecha civil al renovar: convertir primero un `DATE` d
 
 La migración C se aplicó a QA y a la base local tras un nuevo respaldo privado y comparación de tablas históricas, sin seeding. Está activo el servicio local opcional `scheduler`, sin puertos ni cambios globales; se comprobó la tarea horaria declarada y una ejecución manual. No se ha confundido esa comprobación con haber observado todavía su siguiente disparo horario. Los SQL privados no se publican y su restauración sigue pendiente de prueba.
 
+## Etapa D verificada
+
+El libro financiero registra cargos por retraso, daño y pérdida, pagos recibidos por otros medios, abonos, ajustes y reversiones vinculadas. Los cálculos usan centavos enteros, las claves evitan duplicación y las correcciones no borran movimientos. La mora anterior se registra antes de renovar y puede reconstruirse desde renovaciones previas. Se distinguen saldos registrados y cargos calculados pendientes; el bloqueo por deuda permite siempre devolver.
+
+El lector consulta su cuenta en **Cargos y saldo**; el administrador dispone de **Tesorería**, búsqueda de socios, movimientos confirmados e informes por periodo con pagos y reversiones separados. La moneda mostrada al abrir el formulario se revalida dentro de la transacción. [Guía y reglas](19_TESORERIA_Y_MOVIMIENTOS.md).
+
+Puerta ejecutada: **226 pruebas PHP / 1.474 aserciones en SQLite** (222 aprobadas y cuatro omisiones exclusivas de MySQL); **226 pruebas / 1.534 aserciones en MySQL 8.4**, todas aprobadas. PHPStan, TypeScript, Pint y builds de Laravel/demo aprobados. **22 recorridos nativos aprobados**, **seis de circulación/finanzas en Chromium, Firefox y WebKit**, y otros **tres financieros en esos motores tras el control de moneda**. NPM y Composer: cero vulnerabilidades notificadas. [Evidencia](evidence/v3-stage-d.json). La comprobación estática completa de 2.6 continúa como regresión adicional; todavía no es la demo funcional 3.0.
+
+Se corrigieron el reinicio de formularios tras guardar en Inertia 3, el retorno del foco en WebKit y una regresión de Firefox 1572 al analizar regiones con `aria-labelledby`. Se conservaron sus nombres accesibles mediante `aria-label` y pasó Axe normal. La demo comparte componentes con Laravel; su TypeScript ahora resuelve una sola copia de los tipos React, coherente con la deduplicación de Vite ya existente.
+
+Las migraciones D se aplicaron a la base local tras respaldo privado, sin seed. Se observaron ambos disparos horarios de reservas/cargos con `DONE` a las 10:00 UTC del 22/11/2026. Se verificaron los 34 archivos del snapshot inicial y todas las referencias protegidas. La comparación del trabajo 3.0 usa la base 2.6 `827be7c`; el commit `372dbf3` es anterior a la restauración, distinción ya documentada en la auditoría inicial. [Conservación](evidence/v3-preservation-after-finance.json).
+
+**Regresión estática adicional aún abierta:** la suite de 36 casos terminó con 31 aprobados, dos omisiones de capturas redundantes y tres fallos en WebKit. Los tres casos pasaron aislados, pero otra ejecución completa volvió a fallar en navegación/filtrado y foco responsive. Una tercera comprobación de WebKit, ya con condiciones explícitas de llegada a las rutas, aprobó siete casos, omitió una captura y falló cuatro. Se observaron entre 156 y 262 MiB de RAM libre durante la investigación; los snapshots de algunos fallos mostraron el DOM final correcto tras la espera. Esto no demuestra una causa única ni permite afirmar ausencia de regresiones. No se detuvieron procesos de otros proyectos ni se descartaron las aserciones. Falta comprobar los recorridos con recursos suficientes y resolver cualquier fallo que persista.
+
+Commits D: `fb6d6f8` persistencia; `d8b0e2d` cálculo y movimientos; `def5433` rutas, permisos y deuda; `fd228d0` interfaz; `8b1e490` moneda al confirmar; `77b98de` tipos de React compartidos. E y F todavía deben aportar novedades, paneles operativos, datos sintéticos ampliados, circulación estática y cierre de CI/entregables.
+
 ## Estado de las etapas restantes
 
 | Etapa | Estado actual | Evidencia que se exigirá al cerrar |
 |---|---|---|
 | B: solicitudes, preparación, entrega y devolución | Verificada | Ciclo real, negativas, idempotencia y concurrencia MySQL documentados arriba |
 | C: reservas, renovación, vencimientos y avisos | Verificada | FIFO, caducidad, calendario, límites, avisos y concurrencia de renovación documentados arriba |
-| D: multas, movimientos, pagos, ajustes e informes | Pendiente | Centavos exactos, no duplicación, auditoría y reversión trazable |
+| D: multas, movimientos, pagos, ajustes e informes | Verificada | Enteros, idempotencia, permisos, historial, reversión y concurrencia MySQL documentados arriba |
 | E: novedades y administración integrada | Pendiente | Fechas diferenciadas, filtros, métricas de BD y operaciones implementadas |
 | F: demo e integración visual | Pendiente | Ciclo completo lector/bibliotecario sin backend, recargas, responsive, accesibilidad y regresión |
 
 Las guías de lector/personal, documentación financiera, nuevas capturas, cobertura funcional y resumen final de commits se completarán con las funciones ejecutadas. No se anuncia un préstamo funcional por disponer únicamente de sus modelos.
 
-Commits de C: `feb267f` tablas de avisos/renovaciones; `0bee5d6` operaciones y controles; `b798ac8` interfaz y navegación por teclado; `d773b18` programador Docker local. La revisión posterior añade cierre de reservas con membresías inactivas y mensajes legibles. La contabilidad pendiente debe conservar y liquidar los periodos de mora **antes** de renovar para que cambiar el vencimiento no borre atrasos anteriores.
+Commits de C: `feb267f` tablas de avisos/renovaciones; `0bee5d6` operaciones y controles; `b798ac8` interfaz y navegación por teclado; `d773b18` programador Docker local; `43eb46f` cierre de reservas con membresías inactivas y mensajes legibles. D incorporó la liquidación de periodos anteriores antes de renovar.
 
 ## Git y conservación
 

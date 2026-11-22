@@ -66,12 +66,15 @@ erDiagram
     CIRCULATION_REQUESTS ||--o| LOANS : entrega
     MEMBERS ||--o{ LOANS : recibe
     BOOK_COPIES ||--o{ LOANS : historial
+    LOANS ||--o{ LOAN_RENEWALS : renueva
+    USERS ||--o{ LOAN_RENEWALS : registra
     MEMBERS ||--o{ FINANCIAL_ENTRIES : cuenta
-    LOANS ||--o{ FINANCIAL_ENTRIES : origina
-    FINANCIAL_ENTRIES ||--o| FINANCIAL_ENTRIES : revierte
+    LOANS |o--o{ FINANCIAL_ENTRIES : origina
+    USERS |o--o{ FINANCIAL_ENTRIES : registra
+    FINANCIAL_ENTRIES |o--o| FINANCIAL_ENTRIES : revierte
     MEMBERS ||--o{ LIBRARY_NOTICES : recibe
     BOOKS ||--o{ ACQUISITIONS : anticipa
-    USERS ||--o{ AUDIT_EVENTS : ejecuta
+    USERS |o--o{ AUDIT_EVENTS : ejecuta
 ```
 
 `library_policies` contiene una configuración versionada, sin constantes de tarifas en el frontend. Las FK del dominio restringen eliminación de historia. Los campos y tablas se introducen mediante migraciones aditivas; no se reinterpretan títulos como ejemplares.
