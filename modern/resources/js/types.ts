@@ -88,6 +88,8 @@ export function actionLabel(action: string) {
         "book.updated": "Ficha actualizada",
         "book.archived": "Libro archivado",
         "book.restored": "Libro restaurado",
+        "acquisition.created": "Incorporación registrada",
+        "acquisition.updated": "Incorporación actualizada",
         "books.archived_all": "Catálogo archivado",
         "user.created": "Cuenta creada",
         "user.updated": "Cuenta actualizada",

@@ -1,5 +1,21 @@
 import type { Book, User } from "./types";
 
+export type AcquisitionStatus =
+    "announced" | "ordered" | "in_transit" | "incorporated" | "cancelled";
+export interface Acquisition {
+    id: number;
+    book_id: number;
+    status: AcquisitionStatus;
+    publication_on: string | null;
+    expected_on: string | null;
+    incorporated_on: string | null;
+    is_fictional: boolean;
+    source_url: string | null;
+    public_note: string | null;
+    version?: number;
+    book: Pick<Book, "id" | "title" | "deleted_at"> & Partial<Book>;
+}
+
 export type CopyStatus =
     "available" | "held" | "loaned" | "repair" | "lost" | "withdrawn";
 export interface BookCopy {

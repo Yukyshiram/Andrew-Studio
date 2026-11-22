@@ -3,6 +3,7 @@ import * as NavigationDialog from "@radix-ui/react-dialog";
 import { useEffect, useState, type ReactNode } from "react";
 import {
     BookOpen,
+    CalendarDays,
     LayoutDashboard,
     Library,
     LogOut,
@@ -85,6 +86,12 @@ function NavigationContent({ mobile = false }: { mobile?: boolean }) {
     const { url } = usePage();
     const navigation = [
         {
+            href: "/dashboard",
+            icon: LayoutDashboard,
+            label: "Panel",
+            show: !!user,
+        },
+        {
             href: "/manage/circulation",
             icon: BookOpen,
             label: "Circulación",
@@ -113,6 +120,18 @@ function NavigationContent({ mobile = false }: { mobile?: boolean }) {
             icon: WalletCards,
             label: "Tesorería",
             show: can.manageUsers,
+        },
+        {
+            href: "/manage/acquisitions",
+            icon: CalendarDays,
+            label: "Incorporaciones",
+            show: can.manageBooks,
+        },
+        {
+            href: "/news",
+            icon: CalendarDays,
+            label: "Novedades",
+            show: true,
         },
         {
             href: "/catalog",

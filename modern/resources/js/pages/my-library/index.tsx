@@ -67,7 +67,15 @@ export default function MyLibrary({
     const form = useForm<Record<string, string>>({});
     const feedbackRef = useRef<HTMLParagraphElement>(null);
     return (
-        <AppShell title="Mi biblioteca" eyebrow="MI CUENTA">
+        <AppShell
+            title="Mi biblioteca"
+            eyebrow="MI CUENTA"
+            actions={
+                <Button asChild variant="secondary">
+                    <Link href="/news">Consultar novedades</Link>
+                </Button>
+            }
+        >
             {member ? (
                 <>
                     <Card className="library-account">

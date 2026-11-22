@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AcquisitionController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CatalogController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LibraryPolicyController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MyLibraryController;
+use App\Http\Controllers\NewsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RenewalController;
 use App\Http\Controllers\UserController;
@@ -18,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', [CatalogController::class, 'welcome'])->name('home');
+Route::get('/news', [NewsController::class, 'index'])->name('news');
 Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog.index');
 Route::get('/catalog/{book}', [CatalogController::class, 'show'])->name('catalog.show');
 
@@ -47,6 +50,9 @@ Route::middleware('auth')->group(function (): void {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'password'])->middleware('throttle:sensitive')->name('profile.password');
     Route::prefix('manage')->name('manage.')->group(function (): void {
+        Route::get('/acquisitions', [AcquisitionController::class, 'index'])->middleware('can:circulate')->name('acquisitions.index');
+        Route::post('/acquisitions', [AcquisitionController::class, 'store'])->middleware('can:circulate')->name('acquisitions.store');
+        Route::put('/acquisitions/{acquisition}', [AcquisitionController::class, 'update'])->middleware('can:circulate')->name('acquisitions.update');
         Route::get('/finance', [FinanceController::class, 'index'])->middleware('can:admin')->name('finance.index');
         Route::post('/finance/entries', [FinanceController::class, 'store'])->middleware('can:admin')->name('finance.store');
         Route::post('/finance/entries/{entryId}/reverse', [FinanceController::class, 'reverse'])->whereNumber('entryId')->middleware('can:admin')->name('finance.reverse');
