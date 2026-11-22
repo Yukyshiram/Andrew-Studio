@@ -3,7 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Book;
+use App\Models\BookCopy;
+use App\Models\Member;
 use App\Models\User;
+use App\Services\CirculationService;
 use App\Services\LegacyMigrationService;
 use DomainException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -32,6 +35,27 @@ class MigrationRoundtripTest extends TestCase
         }
         $this->assertSame('No registrado', $book->fresh()->language);
         $this->assertSame(0, $book->copies()->count());
+    }
+
+    public function test_financial_schema_roundtrip_preserves_existing_circulation_records(): void
+    {
+        $reader = User::factory()->create();
+        Member::enroll($reader);
+        $staff = User::factory()->create(['role' => 'librarian']);
+        $copy = BookCopy::factory()->create();
+        $service = app(CirculationService::class);
+        $request = $service->requestBook($reader, $copy->book_id);
+        $service->prepare($staff, $request->id);
+        $loan = $service->issue($staff, $request->id);
+        $original = (array) DB::table('loans')->where('id', $loan->id)->first();
+        unset($original['fee_settled_at']);
+        $migration = require database_path('migrations/2026_11_22_094801_create_financial_entries.php');
+        $migration->down();
+        $this->assertSame($original, (array) DB::table('loans')->where('id', $loan->id)->first());
+        $migration->up();
+        $this->assertSame($original, (array) DB::table('loans')->where('id', $loan->id)->first(array_keys($original)));
+        $this->assertNull(DB::table('loans')->where('id', $loan->id)->value('fee_settled_at'));
+        $this->assertDatabaseHas('copy_allocations', ['copy_id' => $copy->id, 'circulation_request_id' => $request->id]);
     }
 
     public function test_an_unused_pre_v3_import_can_still_be_reverted_after_additive_migrations(): void

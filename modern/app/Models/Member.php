@@ -41,6 +41,12 @@ class Member extends Model
         return $this->hasMany(CirculationRequest::class);
     }
 
+    /** @return HasMany<FinancialEntry, $this> */
+    public function entries(): HasMany
+    {
+        return $this->hasMany(FinancialEntry::class);
+    }
+
     /** @return HasMany<Loan, $this> */
     public function loans(): HasMany
     {
