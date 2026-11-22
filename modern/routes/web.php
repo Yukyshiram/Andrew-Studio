@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\LibraryPolicyController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
@@ -42,6 +43,8 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/members', [MemberController::class, 'index'])->name('members.index');
         Route::post('/members', [MemberController::class, 'store'])->name('members.store');
         Route::put('/members/{member}', [MemberController::class, 'update'])->name('members.update');
+        Route::get('/policy', [LibraryPolicyController::class, 'edit'])->name('policy.edit');
+        Route::put('/policy', [LibraryPolicyController::class, 'update'])->name('policy.update');
         Route::get('/books', [BookController::class, 'index'])->name('books.index');
         Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
         Route::post('/books', [BookController::class, 'store'])->name('books.store');

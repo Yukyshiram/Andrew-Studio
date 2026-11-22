@@ -96,6 +96,12 @@ function NavigationContent({ mobile = false }: { mobile?: boolean }) {
             show: can.manageBooks,
         },
         {
+            href: "/manage/policy",
+            icon: ShieldCheck,
+            label: "Políticas",
+            show: can.manageUsers,
+        },
+        {
             href: "/catalog",
             icon: Library,
             label: "Explorar catálogo",
