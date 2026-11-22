@@ -13,6 +13,7 @@ use App\Models\Loan;
 use App\Models\LoanRenewal;
 use App\Models\Member;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -111,7 +112,7 @@ class CirculationService
             $copy->update(['status' => 'loaned']);
             $request->update(['status' => 'fulfilled', 'active_key' => null, 'closed_at' => now()->utc()]);
             $this->audit('loan.issued', $loan, $actor, ['due_on' => $loan->due_on->toDateString(), 'policy_version' => $terms['version']]);
-            $this->notice($loan->member_id, 'loan.issued:'.$loan->id, 'loan.issued', 'Entrega registrada. Devuelve el ejemplar a más tardar el '.$loan->due_on->toDateString().'.');
+            $this->notice($loan->member_id, 'loan.issued:'.$loan->id, 'loan.issued', 'Entrega de «'.$request->book->title.'» registrada. Devuelve el ejemplar a más tardar el '.$this->dateLabel($loan->due_on->toDateString()).'.');
 
             return $loan;
         });
@@ -143,7 +144,7 @@ class CirculationService
                 'damaged' => 'repair', 'lost' => 'lost', default => 'available',
             }]);
             $this->audit($condition === 'lost' ? 'loan.lost' : 'loan.returned', $loan, $actor, ['condition' => $condition]);
-            $this->notice($loan->member_id, 'loan.closed:'.$loan->id, 'loan.closed', 'Se registró el cierre del préstamo #'.$loan->id.'. Consulta el historial de tu biblioteca.');
+            $this->notice($loan->member_id, 'loan.closed:'.$loan->id, 'loan.closed', 'Se registró el cierre del préstamo de «'.$copy->book->title.'». Consulta el historial de tu biblioteca.');
             $this->assignNext($copy->book_id, $policy, $actor);
 
             return $loan;
@@ -161,7 +162,7 @@ class CirculationService
             }
             $this->closeRequest($request, 'cancelled', 'Cancelada por el solicitante o el personal.');
             $this->audit('request.cancelled', $request, $actor);
-            $this->notice($request->member_id, 'request.cancelled:'.$request->id, 'request.cancelled', 'Se canceló tu solicitud #'.$request->id.'.');
+            $this->notice($request->member_id, 'request.cancelled:'.$request->id, 'request.cancelled', 'Se canceló tu solicitud de «'.$request->book->title.'».');
             $this->assignNext($request->book_id, $policy, $actor);
 
             return $request;
@@ -184,7 +185,7 @@ class CirculationService
             }
             $this->closeRequest($request, 'rejected', $reason);
             $this->audit('request.rejected', $request, $actor);
-            $this->notice($request->member_id, 'request.rejected:'.$request->id, 'request.rejected', 'No se aprobó tu solicitud #'.$request->id.'. Motivo: '.$reason);
+            $this->notice($request->member_id, 'request.rejected:'.$request->id, 'request.rejected', 'No se aprobó tu solicitud de «'.$request->book->title.'». Motivo: '.$reason);
             $this->assignNext($request->book_id, $policy, $actor);
 
             return $request;
@@ -229,7 +230,7 @@ class CirculationService
             ]);
             $loan->update(['due_on' => $renewal->getRawOriginal('due_on'), 'renewal_count' => $renewal->renewal_number]);
             $this->audit('loan.renewed', $loan, $actor, $renewal->only(['id', 'renewal_number', 'previous_due_on', 'due_on']));
-            $this->notice($loan->member_id, 'loan.renewed:'.$renewal->id, 'loan.renewed', 'Préstamo #'.$loan->id.' renovado. Nuevo vencimiento: '.$loan->due_on->toDateString().'.');
+            $this->notice($loan->member_id, 'loan.renewed:'.$renewal->id, 'loan.renewed', 'Préstamo de «'.$loan->copy->book->title.'» renovado. Nuevo vencimiento: '.$this->dateLabel($loan->due_on->toDateString()).'.');
 
             return $renewal;
         });
@@ -249,7 +250,7 @@ class CirculationService
             foreach ($stale as $request) {
                 $this->closeRequest($request, 'expired', 'Venció el periodo de recogida sin confirmarse la entrega.');
                 $this->audit('request.expired', $request, $actor);
-                $this->notice($request->member_id, 'request.expired:'.$request->id, 'request.expired', 'Venció la recogida de tu solicitud #'.$request->id.'. El ejemplar se liberó. Puedes iniciar una nueva solicitud.');
+                $this->notice($request->member_id, 'request.expired:'.$request->id, 'request.expired', 'Venció la recogida de «'.$request->book->title.'». El ejemplar se liberó. Puedes iniciar una nueva solicitud.');
                 $expired++;
             }
             $ready = 0;
@@ -260,6 +261,11 @@ class CirculationService
 
             return ['expired' => $expired, 'ready' => $ready];
         });
+    }
+
+    private function dateLabel(string $date): string
+    {
+        return CarbonImmutable::parse($date)->locale('es')->isoFormat('D [de] MMM [de] YYYY');
     }
 
     private function notice(int $memberId, string $key, string $kind, string $message): void
@@ -282,16 +288,31 @@ class CirculationService
 
     private function assignNext(int $bookId, LibraryPolicy $policy, ?User $actor): int
     {
-        if (! Book::whereKey($bookId)->exists()) {
+        $book = Book::find($bookId);
+        if (! $book) {
             return 0;
         }
         $assigned = 0;
         $terms = $policy->terms();
-        $waiting = CirculationRequest::with('member')->where('book_id', $bookId)->where('status', 'waiting')->orderBy('priority')->orderBy('requested_at')->orderBy('id')->get();
+        $waiting = CirculationRequest::with('member.user')->where('book_id', $bookId)->where('status', 'waiting')->orderBy('priority')->orderBy('requested_at')->orderBy('id')->get();
+        $outOfStock = false;
         foreach ($waiting as $request) {
+            if (! $this->membershipActive($request->member, $terms)) {
+                $reason = 'La membresía está suspendida, vencida o desactivada. Consulta al personal.';
+                $this->closeRequest($request, 'rejected', $reason);
+                $this->audit('request.rejected', $request, $actor, ['reason' => 'membership_inactive']);
+                $this->notice($request->member_id, 'request.rejected:'.$request->id, 'request.rejected', 'Se cerró tu reserva de «'.$book->title.'». '.$reason);
+
+                continue;
+            }
+            if ($outOfStock) {
+                continue;
+            }
             $copy = BookCopy::where('book_id', $bookId)->where('status', 'available')->whereIn('condition', ['good', 'worn'])->whereNotIn('id', CopyAllocation::select('copy_id'))->lockForUpdate()->first();
             if (! $copy) {
-                break;
+                $outOfStock = true;
+
+                continue;
             }
             try {
                 $this->assertEligible($request->member, $terms);
@@ -302,7 +323,7 @@ class CirculationService
             $copy->update(['status' => 'held']);
             $request->update(['status' => 'ready', 'ready_until' => $this->calendar->dueDate($this->calendar->today($terms), $terms['pickup_days'], $terms)]);
             $this->audit('request.ready', $request, $actor, ['copy_id' => $copy->id, 'ready_until' => $request->ready_until->toDateString()]);
-            $this->notice($request->member_id, 'request.ready:'.$request->id, 'request.ready', 'Tu solicitud #'.$request->id.' está preparada. Recógela hasta el '.$request->ready_until->toDateString().', inclusive. Consulta el ejemplar y su ubicación en Mis solicitudes.');
+            $this->notice($request->member_id, 'request.ready:'.$request->id, 'request.ready', 'Tu solicitud de «'.$book->title.'» está preparada. Recógela hasta el '.$this->dateLabel($request->ready_until->toDateString()).', inclusive. Consulta el ejemplar y su ubicación en Mis solicitudes.');
             $assigned++;
         }
 
@@ -313,7 +334,7 @@ class CirculationService
     {
         $member = $member->fresh('user');
         $today = $this->calendar->today($terms)->toDateString();
-        if ($member->status !== 'active' || $member->user->trashed() || ($member->expires_on && $member->expires_on->toDateString() < $today)) {
+        if (! $this->membershipActive($member, $terms)) {
             $this->fail('La membresía está suspendida, vencida o desactivada. Consulta al personal.');
         }
         $count = $member->loans()->where('status', 'active')->when($ignoreLoanId !== null, fn ($query) => $query->whereKeyNot($ignoreLoanId))->count();
@@ -326,6 +347,12 @@ class CirculationService
         if ($terms['block_overdue'] && $member->loans()->where('status', 'active')->whereDate('due_on', '<', $today)->exists()) {
             $this->fail('Hay préstamos vencidos. Devuélvelos antes de solicitar o renovar.');
         }
+    }
+
+    private function membershipActive(Member $member, array $terms): bool
+    {
+        return $member->status === 'active' && ! $member->user->trashed()
+            && ($member->expires_on === null || $member->expires_on->toDateString() >= $this->calendar->today($terms)->toDateString());
     }
 
     private function staff(User $actor): void

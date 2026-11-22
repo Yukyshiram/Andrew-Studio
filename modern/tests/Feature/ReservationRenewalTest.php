@@ -102,10 +102,39 @@ class ReservationRenewalTest extends TestCase
         $requests[0]->member->update(['status' => 'suspended']);
         $copy = BookCopy::factory()->create(['book_id' => $book->id]);
         $this->assertSame(['expired' => 0, 'ready' => 1], $service->refreshReservations($staff));
-        $this->assertSame('waiting', $requests[0]->fresh()->status);
+        $this->assertSame('rejected', $requests[0]->fresh()->status);
+        $this->assertNull($requests[0]->fresh()->active_key);
+        $this->assertDatabaseHas('library_notices', ['member_id' => $requests[0]->member_id, 'kind' => 'request.rejected']);
         $this->assertSame('ready', $requests[1]->fresh()->status);
         $this->assertSame($copy->id, $requests[1]->fresh()->allocation->copy_id);
         $this->assertSame('waiting', $requests[2]->fresh()->status);
+    }
+
+    #[TestWith(['suspended'])]
+    #[TestWith(['expired'])]
+    #[TestWith(['deactivated'])]
+    public function test_inactive_waiting_members_are_notified_and_closed_even_when_no_copy_is_available(string $state): void
+    {
+        $staff = User::factory()->create(['role' => 'librarian']);
+        $book = Book::factory()->create();
+        $service = app(CirculationService::class);
+        $first = $service->requestBook($this->reader(), $book->id);
+        $reader = $this->reader();
+        $second = $service->requestBook($reader, $book->id);
+        $service->prepare($staff, $first->id);
+        $service->prepare($staff, $second->id);
+        match ($state) {
+            'suspended' => $reader->member->update(['status' => 'suspended']),
+            'expired' => $reader->member->update(['expires_on' => '2000-01-01']),
+            'deactivated' => $reader->delete(),
+        };
+        $this->assertSame(['expired' => 0, 'ready' => 0], $service->refreshReservations());
+        $this->assertSame('waiting', $first->fresh()->status);
+        $this->assertSame('rejected', $second->fresh()->status);
+        $this->assertNull($second->fresh()->active_key);
+        $this->assertDatabaseHas('library_notices', ['member_id' => $second->member_id, 'kind' => 'request.rejected']);
+        $service->refreshReservations();
+        $this->assertSame(1, LibraryNotice::where('kind', 'request.rejected')->count());
     }
 
     public function test_pending_requests_are_never_assigned_without_staff_validation(): void

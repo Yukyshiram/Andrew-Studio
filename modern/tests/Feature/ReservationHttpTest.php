@@ -65,7 +65,8 @@ class ReservationHttpTest extends TestCase
         $other = Member::enroll($stranger);
         LibraryNotice::create(['member_id' => $other->id, 'event_key' => 'foreign', 'kind' => 'qa', 'message' => 'Privado ajeno']);
         $this->actingAs($reader)->get('/my-library?view=notices')->assertInertia(fn (Assert $page) => $page
-            ->component('my-library/index')->has('notices.data', 2)->where('stats.unread', 2)->missing('notices.data.0.event_key')->where('loans', null));
+            ->component('my-library/index')->has('notices.data', 2)->where('stats.unread', 2)->missing('notices.data.0.event_key')->where('loans', null)
+            ->where('notices.data.0.message', fn (string $message) => str_contains($message, $loan->copy->book->title)));
         $this->actingAs($stranger)->post('/my-library/notices/'.$notice->id.'/read')->assertNotFound();
         $this->actingAs($reader)->post('/my-library/notices/'.$notice->id.'/read')->assertSessionHasNoErrors();
         $readAt = $notice->fresh()->read_at;
