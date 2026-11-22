@@ -84,6 +84,12 @@ function NavigationContent({ mobile = false }: { mobile?: boolean }) {
     const { url } = usePage();
     const navigation = [
         {
+            href: "/manage/inventory",
+            icon: Library,
+            label: "Ejemplares",
+            show: can.manageBooks,
+        },
+        {
             href: "/catalog",
             icon: Library,
             label: "Explorar catálogo",

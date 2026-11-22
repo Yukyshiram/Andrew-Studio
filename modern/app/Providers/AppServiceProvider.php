@@ -22,6 +22,7 @@ class AppServiceProvider extends ServiceProvider
         URL::forceRootUrl(config('app.url'));
         Model::preventLazyLoading(! app()->isProduction());
         Gate::define('admin', fn (User $user): bool => $user->isAdmin());
+        Gate::define('circulate', fn (User $user): bool => $user->canManageBooks());
         foreach (['registration' => 5, 'recovery' => 5, 'sensitive' => 10, 'login-global' => 30] as $name => $attempts) {
             RateLimiter::for($name, fn (Request $request) => Limit::perMinute($attempts)->by($request->ip() ?? 'local'));
         }

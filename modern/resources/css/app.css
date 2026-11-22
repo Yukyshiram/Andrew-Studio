@@ -1,4 +1,16 @@
 @import "tailwindcss";
+
+.library-form { display: grid; gap: 1.5rem; }
+.library-form .card > h2 { margin-bottom: .75rem; }
+.library-form .card > p { margin-bottom: 1.5rem; }
+.library-search { display: flex; align-items: start; gap: 1rem; margin: 1.75rem 0; }
+.library-search .field { flex: 1; min-width: 0; }
+.library-search > .button { margin-top: 1.8rem; }
+.library-weekdays { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0 1.5rem; }
+.library-weekdays legend { margin-bottom: .75rem; }
+.checkbox-row { display: flex; align-items: center; gap: .6rem; margin-block: .75rem; }
+.checkbox-row input { width: 1.1rem; height: 1.1rem; accent-color: var(--amber); }
+@media (max-width: 600px) { .library-search { flex-direction: column; } .library-search .field { width: 100%; } .library-search > .button { margin-top: 0; } }
 @source '../js';
 @theme {
     --font-sans: "Inter", sans-serif;
