@@ -37,6 +37,23 @@ services:
       retries: 30
       start_period: 30s
     restart: unless-stopped
+  scheduler:
+    profiles: [automation]
+    image: bibliotecary-v2-app
+    entrypoint: ["docker-php-entrypoint"]
+    command: ["php", "artisan", "schedule:work", "--no-interaction"]
+    user: www-data
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      MAIL_HOST: mailpit
+    volumes:
+      - .:/var/www/html
+      - modern_vendor:/var/www/html/vendor:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
   mailpit:
     image: axllent/mailpit:v1.27
     ports:
