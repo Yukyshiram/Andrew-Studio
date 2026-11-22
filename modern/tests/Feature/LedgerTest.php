@@ -225,6 +225,63 @@ class LedgerTest extends TestCase
         $this->assertSame(0, $service->assessAll());
     }
 
+    public function test_renewing_posts_prior_overdue_charges_before_extending_the_due_date(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-20T18:00:00Z'));
+        [$reader, , $loan] = $this->loan(['loan_days' => 1, 'daily_fine_cents' => 125, 'block_overdue' => false]);
+        $this->travelTo(CarbonImmutable::parse('2026-11-23T18:00:00Z'));
+        app(CirculationService::class)->renew($reader, $loan->id, (string) Str::uuid());
+        $this->assertSame('2026-11-24', $loan->fresh()->due_on->toDateString());
+        $this->assertDatabaseHas('financial_entries', ['loan_id' => $loan->id, 'kind' => 'overdue', 'amount_cents' => 125, 'occurred_on' => '2026-11-23']);
+        $this->travelTo(CarbonImmutable::parse('2026-11-25T18:00:00Z'));
+        $this->assertSame(250, app(LedgerService::class)->summary($loan->member)['balance_cents']);
+    }
+
+    public function test_debt_block_includes_unposted_charges_and_never_prevents_return(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-20T18:00:00Z'));
+        [$reader, $admin, $loan] = $this->loan(['loan_days' => 1, 'daily_fine_cents' => 125, 'block_overdue' => false, 'block_balance_cents' => 100]);
+        $otherCopy = BookCopy::factory()->create();
+        $this->travelTo(CarbonImmutable::parse('2026-11-23T18:00:00Z'));
+        $service = app(CirculationService::class);
+        foreach ([fn () => $service->requestBook($reader, $otherCopy->book_id), fn () => $service->renew($reader, $loan->id, (string) Str::uuid())] as $action) {
+            try {
+                $action();
+                $this->fail('La deuda debe bloquear la operación.');
+            } catch (ValidationException $exception) {
+                $this->assertSame('El saldo supera el máximo permitido. Consulta tus cargos y registra su pago con el personal autorizado.', $exception->errors()['circulation'][0]);
+            }
+        }
+        $this->assertSame(125, app(LedgerService::class)->summary($loan->member)['pending_cents']);
+        $service->receive($admin, $loan->id, 'good');
+        $this->assertSame('returned', $loan->fresh()->status);
+        $this->assertSame(125, app(LedgerService::class)->summary($loan->member)['recorded_cents']);
+        app(LedgerService::class)->manual($admin, $loan->member_id, 'payment', 125, (string) Str::uuid(), 'Pago QA');
+        $this->assertSame('pending', $service->requestBook($reader, $otherCopy->book_id)->status);
+    }
+
+    public function test_balance_limit_is_inclusive_and_zero_disables_the_block(): void
+    {
+        $member = Member::factory()->create();
+        $admin = User::factory()->create(['role' => 'admin']);
+        LibraryPolicy::current()->update(['block_balance_cents' => 100]);
+        $ledger = app(LedgerService::class);
+        $ledger->manual($admin, $member->id, 'adjustment', 100, (string) Str::uuid(), 'Cargo QA');
+        $firstCopy = BookCopy::factory()->create();
+        $secondCopy = BookCopy::factory()->create();
+        $service = app(CirculationService::class);
+        $this->assertSame('pending', $service->requestBook($member->user, $firstCopy->book_id)->status);
+        $ledger->manual($admin, $member->id, 'adjustment', 1, (string) Str::uuid(), 'Otro cargo QA');
+        try {
+            $service->requestBook($member->user, $secondCopy->book_id);
+            $this->fail('Superar el límite debe bloquear la solicitud.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('circulation', $exception->errors());
+        }
+        LibraryPolicy::current()->update(['block_balance_cents' => 0]);
+        $this->assertSame('pending', $service->requestBook($member->user, $secondCopy->book_id)->status);
+    }
+
     public function test_assessment_command_can_be_repeated_without_creating_charges_at_zero_rates(): void
     {
         $this->loan();

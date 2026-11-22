@@ -19,7 +19,7 @@ class Member extends Model
 
     protected function casts(): array
     {
-        return ['expires_on' => 'immutable_date:Y-m-d', 'loan_limit' => 'integer'];
+        return ['expires_on' => 'immutable_date:Y-m-d', 'loan_limit' => 'integer', 'ledger_balance_cents' => 'integer'];
     }
 
     /** @return BelongsTo<User, $this> */

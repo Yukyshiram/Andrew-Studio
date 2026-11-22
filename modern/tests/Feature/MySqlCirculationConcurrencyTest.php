@@ -5,11 +5,13 @@ namespace Tests\Feature;
 use App\Models\AuditEvent;
 use App\Models\BookCopy;
 use App\Models\CirculationRequest;
+use App\Models\FinancialEntry;
 use App\Models\LibraryPolicy;
 use App\Models\Loan;
 use App\Models\Member;
 use App\Models\User;
 use App\Services\CirculationService;
+use App\Services\LedgerService;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -32,7 +34,7 @@ class MySqlCirculationConcurrencyTest extends TestCase
         $this->assertSame('bibliotecary_v3_qa', DB::connection()->getDatabaseName());
     }
 
-    /** @param list<array{0: string, 1: int, 2: int, 3?: string}> $jobs @return list<array{id: int, status: string}> */
+    /** @param list<array{0: string, 1: int, 2: int, 3?: string, 4?: int}> $jobs @return list<array{id: int, status: string}> */
     private function concurrently(array $jobs): array
     {
         $processes = [];
@@ -41,7 +43,7 @@ class MySqlCirculationConcurrencyTest extends TestCase
         try {
             foreach ($jobs as $job) {
                 [$action, $actor, $request] = $job;
-                $process = new Process([PHP_BINARY, base_path('tests/Support/circulation-worker.php'), $action, (string) $actor, (string) $request, $job[3] ?? ''], base_path(), timeout: 20);
+                $process = new Process([PHP_BINARY, base_path('tests/Support/circulation-worker.php'), $action, (string) $actor, (string) $request, $job[3] ?? '', (string) ($job[4] ?? 0)], base_path(), timeout: 20);
                 $process->start();
                 $processes[] = $process;
                 $this->assertTrue($process->waitUntil(fn (string $type, string $output): bool => $type === Process::OUT && str_contains($output, 'ready')), $process->getErrorOutput());
@@ -68,6 +70,33 @@ class MySqlCirculationConcurrencyTest extends TestCase
                 }
             }
         }
+    }
+
+    public function test_simultaneous_payments_cannot_overpay_an_account(): void
+    {
+        $member = Member::factory()->create();
+        $admin = User::factory()->create(['role' => 'admin']);
+        $ledger = app(LedgerService::class);
+        $ledger->manual($admin, $member->id, 'adjustment', 125, (string) Str::uuid(), 'Cargo sintético QA');
+        $results = $this->concurrently([['payment', $admin->id, $member->id, (string) Str::uuid(), 100], ['payment', $admin->id, $member->id, (string) Str::uuid(), 100]]);
+        $this->assertEqualsCanonicalizing(['payment', 'balance_rejected'], array_column($results, 'status'));
+        $this->assertSame(25, $ledger->summary($member)['balance_cents']);
+        $this->assertDatabaseCount('financial_entries', 2);
+        $this->assertSame(1, FinancialEntry::where('kind', 'payment')->count());
+    }
+
+    public function test_simultaneous_replayed_payments_are_recorded_once(): void
+    {
+        $member = Member::factory()->create();
+        $admin = User::factory()->create(['role' => 'admin']);
+        $ledger = app(LedgerService::class);
+        $ledger->manual($admin, $member->id, 'adjustment', 125, (string) Str::uuid(), 'Cargo sintético QA');
+        $key = (string) Str::uuid();
+        $results = $this->concurrently([['payment', $admin->id, $member->id, $key, 125], ['payment', $admin->id, $member->id, strtoupper($key), 125]]);
+        $this->assertSame($results[0]['id'], $results[1]['id']);
+        $this->assertSame(['payment', 'payment'], array_column($results, 'status'));
+        $this->assertSame(0, $ledger->summary($member)['balance_cents']);
+        $this->assertDatabaseCount('financial_entries', 2);
     }
 
     public function test_simultaneous_retries_extend_a_loan_only_once(): void

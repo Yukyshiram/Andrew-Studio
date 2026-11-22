@@ -5,6 +5,7 @@ namespace App\Models;
 use DomainException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class FinancialEntry extends Model
 {
@@ -31,6 +32,18 @@ class FinancialEntry extends Model
         static::deleting(function (): never {
             throw new DomainException('Los movimientos financieros no se eliminan; registra una reversión.');
         });
+    }
+
+    /** @return BelongsTo<FinancialEntry, $this> */
+    public function original(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'reversal_of');
+    }
+
+    /** @return HasOne<FinancialEntry, $this> */
+    public function reversal(): HasOne
+    {
+        return $this->hasOne(self::class, 'reversal_of');
     }
 
     /** @return BelongsTo<Member, $this> */

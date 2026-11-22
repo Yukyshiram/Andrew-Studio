@@ -8,7 +8,9 @@ use App\Models\LibraryPolicy;
 use App\Models\Member;
 use App\Models\User;
 use App\Services\CirculationService;
+use App\Services\LedgerService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class LibraryPolicyTest extends TestCase
@@ -57,6 +59,16 @@ class LibraryPolicyTest extends TestCase
         $this->assertSame('MXN', LibraryPolicy::current()->currency);
         $this->assertSame('America/Mexico_City', LibraryPolicy::current()->timezone);
         $this->assertSame(1, LibraryPolicy::current()->version);
+    }
+
+    public function test_currency_cannot_change_after_a_manual_movement_even_without_loans(): void
+    {
+        $member = Member::factory()->create();
+        $admin = User::factory()->create(['role' => 'admin']);
+        app(LedgerService::class)->manual($admin, $member->id, 'adjustment', 100, (string) Str::uuid(), 'Cargo sintético QA');
+        $this->assertDatabaseCount('loans', 0);
+        $this->actingAs($admin)->put('/manage/policy', [...LibraryPolicy::current()->terms(), 'currency' => 'EUR'])->assertSessionHasErrors('currency');
+        $this->assertSame('MXN', LibraryPolicy::current()->currency);
     }
 
     public function test_calendar_configuration_rejects_objects_instead_of_lists(): void

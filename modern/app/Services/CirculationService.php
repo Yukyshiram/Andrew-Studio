@@ -23,7 +23,7 @@ use Illuminate\Validation\ValidationException;
 
 class CirculationService
 {
-    public function __construct(private LibraryCalendar $calendar) {}
+    public function __construct(private LibraryCalendar $calendar, private LedgerService $ledger) {}
 
     public function requestBook(User $actor, int $bookId): CirculationRequest
     {
@@ -143,6 +143,7 @@ class CirculationService
             $copy->update(['condition' => $condition, 'status' => match ($condition) {
                 'damaged' => 'repair', 'lost' => 'lost', default => 'available',
             }]);
+            $this->ledger->assessLoan($loan->id, $actor);
             $this->audit($condition === 'lost' ? 'loan.lost' : 'loan.returned', $loan, $actor, ['condition' => $condition]);
             $this->notice($loan->member_id, 'loan.closed:'.$loan->id, 'loan.closed', 'Se registró el cierre del préstamo de «'.$copy->book->title.'». Consulta el historial de tu biblioteca.');
             $this->assignNext($copy->book_id, $policy, $actor);
@@ -223,6 +224,7 @@ class CirculationService
             }
             $today = $this->calendar->today($terms);
             $base = $loan->due_on->greaterThan($today) ? $loan->due_on : $today;
+            $this->ledger->assessLoan($loan->id, $actor);
             $renewal = LoanRenewal::create([
                 'loan_id' => $loan->id, 'actor_id' => $actor->id, 'operation_key' => $operationKey,
                 'renewal_number' => $loan->renewal_count + 1, 'previous_due_on' => $loan->due_on->toDateString(),
@@ -346,6 +348,9 @@ class CirculationService
         }
         if ($terms['block_overdue'] && $member->loans()->where('status', 'active')->whereDate('due_on', '<', $today)->exists()) {
             $this->fail('Hay préstamos vencidos. Devuélvelos antes de solicitar o renovar.');
+        }
+        if ($terms['block_balance_cents'] > 0 && $this->ledger->summary($member)['balance_cents'] > $terms['block_balance_cents']) {
+            $this->fail('El saldo supera el máximo permitido. Consulta tus cargos y registra su pago con el personal autorizado.');
         }
     }
 

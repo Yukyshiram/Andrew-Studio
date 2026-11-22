@@ -8,6 +8,7 @@ use App\Models\LibraryNotice;
 use App\Models\LibraryPolicy;
 use App\Models\Member;
 use App\Services\CirculationService;
+use App\Services\LedgerService;
 use App\Services\LibraryCalendar;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,9 +19,9 @@ use Inertia\Response;
 
 class MyLibraryController extends Controller
 {
-    public function index(Request $request, LibraryCalendar $calendar): Response
+    public function index(Request $request, LibraryCalendar $calendar, LedgerService $ledger): Response
     {
-        $filters = $request->validate(['view' => ['nullable', Rule::in(['loans', 'requests', 'history', 'notices'])], 'page' => ['nullable', 'integer', 'min:1', 'max:100000']]);
+        $filters = $request->validate(['view' => ['nullable', Rule::in(['loans', 'requests', 'history', 'notices', 'finance'])], 'page' => ['nullable', 'integer', 'min:1', 'max:100000']]);
         $view = $filters['view'] ?? 'loans';
         $member = Member::where('user_id', $request->user()->id)->first();
         $terms = LibraryPolicy::current()->terms();
@@ -31,6 +32,8 @@ class MyLibraryController extends Controller
             'requests' => $member && $view === 'requests' ? $member->requests()->withQueuePosition()->with(['book', 'allocation.copy'])->latest('id')->paginate(12)->withQueryString() : null,
             'loans' => $member && in_array($view, ['loans', 'history'], true) ? $member->loans()->with('copy.book')->when($view === 'history', fn ($query) => $query->where('status', '!=', 'active'), fn ($query) => $query->where('status', 'active'))->latest('id')->paginate(12)->withQueryString() : null,
             'notices' => $member && $view === 'notices' ? LibraryNotice::where('member_id', $member->id)->latest('id')->paginate(12)->withQueryString() : null,
+            'account' => $member && $view === 'finance' ? $ledger->summary($member) : null,
+            'entries' => $member && $view === 'finance' ? $member->entries()->with(['actor:id,name', 'reversal:id,reversal_of'])->latest('id')->paginate(20)->withQueryString() : null,
             'stats' => $member ? [
                 'active' => $member->loans()->where('status', 'active')->count(),
                 'overdue' => $member->loans()->where('status', 'active')->whereDate('due_on', '<', $today)->count(),
@@ -39,6 +42,15 @@ class MyLibraryController extends Controller
             ] : null,
             'view' => $view, 'today' => $today, 'timezone' => $terms['timezone'],
         ]);
+    }
+
+    public function refreshFinance(Request $request, LedgerService $ledger): RedirectResponse
+    {
+        $request->validate(['member_id' => ['prohibited'], 'amount_cents' => ['prohibited']]);
+        $member = Member::where('user_id', $request->user()->id)->firstOrFail();
+        $created = $ledger->assessMember($member->id, $request->user());
+
+        return back()->with('success', 'Cargos nuevos registrados: '.$created.'.');
     }
 
     public function readNotice(Request $request, int $noticeId): RedirectResponse

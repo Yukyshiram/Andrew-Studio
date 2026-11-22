@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LibraryPolicyRequest;
 use App\Models\AuditEvent;
 use App\Models\CirculationRequest;
+use App\Models\FinancialEntry;
 use App\Models\LibraryPolicy;
 use App\Models\Loan;
 use App\Models\User;
@@ -33,8 +34,8 @@ class LibraryPolicyController extends Controller
             if ($data['timezone'] !== $policy->timezone && (Loan::where('status', 'active')->exists() || CirculationRequest::whereIn('status', CirculationRequest::OPEN)->exists())) {
                 throw ValidationException::withMessages(['timezone' => 'Cierra los préstamos y solicitudes abiertos antes de cambiar la zona horaria.']);
             }
-            if ($data['currency'] !== $policy->currency && Loan::exists()) {
-                throw ValidationException::withMessages(['currency' => 'La moneda no puede cambiar después del primer préstamo; se requiere una migración financiera explícita.']);
+            if ($data['currency'] !== $policy->currency && (Loan::exists() || FinancialEntry::exists())) {
+                throw ValidationException::withMessages(['currency' => 'La moneda no puede cambiar después del primer préstamo o movimiento; se requiere una migración financiera explícita.']);
             }
             $data['closed_weekdays'] = array_map('intval', $data['closed_weekdays']);
             $before = $policy->terms();

@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CirculationController;
+use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LibraryPolicyController;
 use App\Http\Controllers\MemberController;
@@ -35,6 +36,7 @@ Route::middleware('guest')->group(function (): void {
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/my-library', [MyLibraryController::class, 'index'])->name('my-library');
+    Route::post('/my-library/finance/refresh', [MyLibraryController::class, 'refreshFinance'])->name('my-library.finance.refresh');
     Route::post('/my-library/loans/{loanId}/renew', [RenewalController::class, 'store'])->whereNumber('loanId')->name('my-library.renew');
     Route::post('/my-library/notices/{noticeId}/read', [MyLibraryController::class, 'readNotice'])->whereNumber('noticeId')->name('my-library.notices.read');
     Route::post('/my-library/requests', [MyLibraryController::class, 'store'])->name('my-library.request');
@@ -45,6 +47,10 @@ Route::middleware('auth')->group(function (): void {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'password'])->middleware('throttle:sensitive')->name('profile.password');
     Route::prefix('manage')->name('manage.')->group(function (): void {
+        Route::get('/finance', [FinanceController::class, 'index'])->middleware('can:admin')->name('finance.index');
+        Route::post('/finance/entries', [FinanceController::class, 'store'])->middleware('can:admin')->name('finance.store');
+        Route::post('/finance/entries/{entryId}/reverse', [FinanceController::class, 'reverse'])->whereNumber('entryId')->middleware('can:admin')->name('finance.reverse');
+        Route::post('/finance/refresh', [FinanceController::class, 'refresh'])->middleware('can:admin')->name('finance.refresh');
         Route::get('/circulation', [CirculationController::class, 'index'])->name('circulation.index');
         Route::post('/circulation/refresh', [CirculationController::class, 'refresh'])->middleware('can:circulate')->name('circulation.refresh');
         Route::post('/circulation/loans/{loanId}/renew', [RenewalController::class, 'store'])->whereNumber('loanId')->middleware('can:circulate')->name('circulation.renew');
