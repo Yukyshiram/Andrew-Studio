@@ -90,6 +90,12 @@ function NavigationContent({ mobile = false }: { mobile?: boolean }) {
             show: can.manageBooks,
         },
         {
+            href: "/manage/members",
+            icon: Users,
+            label: "Socios",
+            show: can.manageBooks,
+        },
+        {
             href: "/catalog",
             icon: Library,
             label: "Explorar catálogo",

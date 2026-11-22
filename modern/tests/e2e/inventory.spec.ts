@@ -65,3 +65,46 @@ test("inventario: alta, edición, búsqueda, teclado y tabla móvil", async ({
     ).toEqual([]);
     expect(errors).toEqual([]);
 });
+
+test("socios: alta automática al registrarse y suspensión por personal", async ({
+    page,
+}) => {
+    const email = `qa-member-${Date.now()}@example.test`;
+    await page.goto("/register");
+    await page
+        .getByLabel("Tu nombre", { exact: true })
+        .fill("Socia sintética QA");
+    await page.getByLabel("Correo electrónico", { exact: true }).fill(email);
+    await page
+        .getByLabel("Elige una contraseña", { exact: true })
+        .fill("Prueba-Segura2026!");
+    await page
+        .getByLabel("Repite tu contraseña", { exact: true })
+        .fill("Prueba-Segura2026!");
+    await page
+        .getByRole("button", { name: "Crear mi cuenta", exact: true })
+        .click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await page
+        .getByRole("button", { name: "Cerrar sesión", exact: true })
+        .click();
+    await staffLogin(page);
+    await page.getByRole("link", { name: "Socios", exact: true }).click();
+    await page.getByLabel("Buscar", { exact: true }).fill(email);
+    await page.getByRole("button", { name: "Buscar", exact: true }).click();
+    await expect(page.locator("tbody tr")).toHaveCount(1);
+    await page
+        .getByRole("button", {
+            name: "Editar membresía de Socia sintética QA",
+            exact: true,
+        })
+        .click();
+    await page
+        .getByLabel("Estado de membresía", { exact: true })
+        .selectOption("suspended");
+    await page
+        .getByRole("button", { name: "Guardar membresía", exact: true })
+        .click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.locator("tbody tr")).toContainText("Suspendida");
+});

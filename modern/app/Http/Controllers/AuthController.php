@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\AuditEvent;
+use App\Models\Member;
 use App\Models\User;
 use App\Rules\BcryptLength;
 use Illuminate\Auth\Events\PasswordReset;
@@ -24,7 +25,12 @@ class AuthController extends Controller
 {
     public function register(RegisterRequest $request): RedirectResponse
     {
-        $user = DB::transaction(fn () => User::create([...$request->validated(), 'role' => 'reader']));
+        $user = DB::transaction(function () use ($request): User {
+            $user = User::create([...$request->validated(), 'role' => 'reader']);
+            Member::enroll($user);
+
+            return $user;
+        });
         event(new Registered($user));
         Auth::login($user);
         $request->session()->regenerate();
