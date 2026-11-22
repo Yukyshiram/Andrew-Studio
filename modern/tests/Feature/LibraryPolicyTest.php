@@ -3,8 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\AuditEvent;
+use App\Models\BookCopy;
 use App\Models\LibraryPolicy;
+use App\Models\Member;
 use App\Models\User;
+use App\Services\CirculationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -36,5 +39,31 @@ class LibraryPolicyTest extends TestCase
             ...LibraryPolicy::current()->terms(), 'closed_weekdays' => [0, 1, 2, 3, 4, 5, 6], 'daily_fine_cents' => -1, 'timezone' => 'Fake/City',
         ])->assertSessionHasErrors(['closed_weekdays', 'daily_fine_cents', 'timezone']);
         $this->assertSame(1, LibraryPolicy::current()->version);
+    }
+
+    public function test_policy_cannot_reinterpret_open_dates_or_an_existing_loan_currency(): void
+    {
+        $reader = User::factory()->create();
+        Member::enroll($reader);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $copy = BookCopy::factory()->create();
+        $service = app(CirculationService::class);
+        $request = $service->requestBook($reader, $copy->book_id);
+        $terms = LibraryPolicy::current()->terms();
+        $this->actingAs($admin)->put('/manage/policy', [...$terms, 'timezone' => 'Europe/Madrid'])->assertSessionHasErrors('timezone');
+        $service->prepare($admin, $request->id);
+        $service->issue($admin, $request->id);
+        $this->put('/manage/policy', [...$terms, 'currency' => 'EUR'])->assertSessionHasErrors('currency');
+        $this->assertSame('MXN', LibraryPolicy::current()->currency);
+        $this->assertSame('America/Mexico_City', LibraryPolicy::current()->timezone);
+        $this->assertSame(1, LibraryPolicy::current()->version);
+    }
+
+    public function test_calendar_configuration_rejects_objects_instead_of_lists(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']))->put('/manage/policy', [
+            ...LibraryPolicy::current()->terms(), 'closed_weekdays' => ['sunday' => 0], 'closure_dates' => ['holiday' => '2026-12-25'],
+        ])->assertSessionHasErrors(['closed_weekdays', 'closure_dates']);
+        $this->assertSame([0], LibraryPolicy::current()->closed_weekdays);
     }
 }

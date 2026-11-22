@@ -35,9 +35,9 @@ class LibraryPolicyRequest extends FormRequest
             'damage_charge_cents' => ['required', 'integer', 'min:0', 'max:100000000'],
             'block_balance_cents' => ['required', 'integer', 'min:0', 'max:100000000'],
             'block_overdue' => ['required', 'boolean'],
-            'closed_weekdays' => ['present', 'array', 'max:6'],
+            'closed_weekdays' => ['present', 'array', 'list', 'max:6'],
             'closed_weekdays.*' => ['required', 'integer', 'min:0', 'max:6', 'distinct'],
-            'closure_dates' => ['present', 'array', 'max:366'],
+            'closure_dates' => ['present', 'array', 'list', 'max:366'],
             'closure_dates.*' => ['required', 'date_format:Y-m-d', 'distinct'],
         ];
     }
