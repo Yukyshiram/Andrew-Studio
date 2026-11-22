@@ -60,7 +60,7 @@ class FinanceController extends Controller
     public function store(FinancialEntryRequest $request, LedgerService $ledger): RedirectResponse
     {
         $ledger->manual($request->user(), $request->integer('member_id'), $request->validated('kind'), $request->integer('amount_cents'),
-            $request->validated('operation_key'), $request->validated('reason'), $request->validated('reference'));
+            $request->validated('operation_key'), $request->validated('reason'), $request->validated('reference'), $request->validated('expected_currency'));
 
         return back()->with('success', 'Movimiento registrado en el historial financiero.');
     }

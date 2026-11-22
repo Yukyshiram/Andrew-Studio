@@ -72,7 +72,7 @@ class LedgerService
         return $created;
     }
 
-    public function manual(User $actor, int $memberId, string $kind, mixed $amountCents, string $operationKey, string $reason, ?string $reference = null): FinancialEntry
+    public function manual(User $actor, int $memberId, string $kind, mixed $amountCents, string $operationKey, string $reason, ?string $reference = null, ?string $expectedCurrency = null): FinancialEntry
     {
         if (! in_array($kind, FinancialEntry::MANUAL_KINDS, true) || ! is_int($amountCents) || $amountCents === 0 || abs($amountCents) > 1_000_000_000 || ($kind !== 'adjustment' && $amountCents < 0)) {
             $this->fail('Selecciona un movimiento válido e indica centavos enteros distintos de cero, hasta 1000000000.');
@@ -84,8 +84,11 @@ class LedgerService
             $this->fail('La referencia admite hasta 100 caracteres.');
         }
 
-        return $this->mutate(function (LibraryPolicy $policy) use ($actor, $memberId, $kind, $amountCents, $key, $reason, $reference): FinancialEntry {
+        return $this->mutate(function (LibraryPolicy $policy) use ($actor, $memberId, $kind, $amountCents, $key, $reason, $reference, $expectedCurrency): FinancialEntry {
             $this->admin($actor);
+            if ($expectedCurrency !== null && $expectedCurrency !== $policy->currency) {
+                $this->fail('La moneda cambió. Revisa el importe antes de confirmar de nuevo.');
+            }
             $member = Member::findOrFail($memberId);
             $amount = in_array($kind, ['payment', 'credit'], true) ? -$amountCents : $amountCents;
             $intent = ['member_id' => $memberId, 'actor_id' => $actor->id, 'kind' => $kind, 'amount_cents' => $amount, 'reason' => $reason, 'reference' => $reference, 'reversal_of' => null];

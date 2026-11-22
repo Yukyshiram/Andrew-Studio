@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\LibraryPolicy;
 use App\Models\Member;
 use App\Models\User;
 use App\Services\LedgerService;
@@ -25,7 +26,7 @@ class FinanceHttpTest extends TestCase
     private function payload(Member $member, array $overrides = []): array
     {
         return array_merge(['member_id' => $member->id, 'kind' => 'adjustment', 'amount_cents' => 10001,
-            'operation_key' => (string) Str::uuid(), 'reason' => 'Cargo sintético QA', 'reference' => 'QA-1'], $overrides);
+            'operation_key' => (string) Str::uuid(), 'expected_currency' => LibraryPolicy::current()->currency, 'reason' => 'Cargo sintético QA', 'reference' => 'QA-1'], $overrides);
     }
 
     public function test_financial_endpoints_require_a_session(): void
@@ -59,6 +60,19 @@ class FinanceHttpTest extends TestCase
         $this->get('/manage/finance?member_id='.$member->id)->assertInertia(fn (Assert $page) => $page
             ->component('finance/index')->where('account.balance_cents', 10001)->where('report.current_recorded_balance_cents', 10001)
             ->where('entries.data.0.amount_cents', 10001)->where('entries.data.0.reason', $payload['reason'])->missing('entries.data.0.event_key'));
+    }
+
+    public function test_currency_changed_after_opening_the_form_requires_review_before_recording(): void
+    {
+        $member = Member::factory()->create();
+        $admin = User::factory()->create(['role' => 'admin']);
+        $payload = $this->payload($member);
+        $this->actingAs($admin)->put('/manage/policy', [...LibraryPolicy::current()->terms(), 'currency' => 'EUR'])->assertSessionHasNoErrors();
+        $this->post('/manage/finance/entries', $payload)->assertSessionHasErrors('finance');
+        $this->assertDatabaseCount('financial_entries', 0);
+        $this->assertSame('EUR', LibraryPolicy::current()->currency);
+        $this->post('/manage/finance/entries', $this->payload($member))->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('financial_entries', ['member_id' => $member->id, 'currency' => 'EUR', 'amount_cents' => 10001]);
     }
 
     public function test_validation_refuses_decimal_amounts_and_forged_financial_metadata(): void

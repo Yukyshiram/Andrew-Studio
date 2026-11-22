@@ -29,6 +29,7 @@ class FinancialEntryRequest extends FormRequest
             'kind' => ['required', Rule::in(FinancialEntry::MANUAL_KINDS)],
             'amount_cents' => ['required', 'integer', 'between:-1000000000,1000000000', 'not_in:0'],
             'operation_key' => ['required', 'uuid'],
+            'expected_currency' => ['required', 'string', 'regex:/^[A-Z]{3}$/'],
             'reason' => ['required', 'string', 'max:500'],
             'reference' => ['nullable', 'string', 'max:100'],
             'actor_id' => ['prohibited'], 'currency' => ['prohibited'], 'occurred_on' => ['prohibited'],
@@ -44,6 +45,7 @@ class FinancialEntryRequest extends FormRequest
             'amount_cents.not_in' => 'El importe debe ser distinto de cero.',
             'member_id.exists' => 'Selecciona un socio registrado.', 'kind.in' => 'Selecciona un tipo de movimiento válido.',
             'operation_key.uuid' => 'Abre de nuevo la confirmación para generar una operación válida.',
+            'expected_currency.regex' => 'Vuelve a abrir la cuenta para comprobar su moneda.',
             'reason.max' => 'El motivo admite hasta 500 caracteres.', 'reference.max' => 'La referencia admite hasta 100 caracteres.',
             'prohibited' => 'Este dato lo determina la biblioteca y no puede enviarse en el formulario.',
         ];

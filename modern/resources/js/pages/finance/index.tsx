@@ -109,6 +109,7 @@ export default function Finance({
                 reason: data.reason,
                 reference: data.reference,
                 operation_key: token.current,
+                expected_currency: currency,
             }));
         } else
             form.transform((data) => ({
