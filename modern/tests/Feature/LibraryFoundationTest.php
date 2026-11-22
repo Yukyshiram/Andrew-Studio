@@ -70,7 +70,7 @@ class LibraryFoundationTest extends TestCase
         foreach ($files as $file) {
             (require $file)->up();
         }
-        $this->assertSame('Español', $book->fresh()->language);
+        $this->assertSame('No registrado', $book->fresh()->language);
         $this->assertSame(0, $book->copies()->count());
     }
 }

@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::table('books', function (Blueprint $table): void {
             $table->string('isbn', 13)->nullable()->index();
             $table->string('edition', 100)->nullable();
-            $table->string('language', 80)->default('Español');
+            $table->string('language', 80)->default('No registrado');
         });
         Schema::create('library_policies', function (Blueprint $table): void {
             $table->unsignedInteger('id')->primary();
