@@ -128,6 +128,9 @@ final class LegacyMigrationService
     {
         try {
             return DB::transaction(function () use ($batchId, $dryRun): array {
+                if (Schema::hasTable('library_policies')) {
+                    DB::table('library_policies')->where('id', 1)->lockForUpdate()->first();
+                }
                 $batch = ImportBatch::query()->whereKey($batchId)->lockForUpdate()->first();
 
                 if ($batch === null) {
@@ -403,7 +406,7 @@ final class LegacyMigrationService
             $reference = $expected[$id] ?? null;
 
             if ($reference === null || (int) $attributes['legacy_id'] !== $reference['legacy_id']
-                || ! hash_equals($reference['fingerprint'], $this->fingerprint($attributes))) {
+                || ! $this->matchesSnapshot($table, $attributes, $reference['fingerprint'])) {
                 throw new DomainException('Hay registros modificados después de la importación. No se puede revertir automáticamente.');
             }
 
@@ -413,12 +416,29 @@ final class LegacyMigrationService
         return $ids;
     }
 
+    private function matchesSnapshot(string $table, array $attributes, string $expected): bool
+    {
+        if (hash_equals($expected, $this->fingerprint($attributes))) {
+            return true;
+        }
+        if ($table !== 'books' || ($attributes['isbn'] ?? null) !== null || ($attributes['edition'] ?? null) !== null
+            || ($attributes['language'] ?? 'No registrado') !== 'No registrado') {
+            return false;
+        }
+        unset($attributes['isbn'], $attributes['edition'], $attributes['language']);
+
+        return hash_equals($expected, $this->fingerprint($attributes));
+    }
+
     /**
      * @param  list<int>  $userIds
      */
     private function assertImportedUsersUnused(array $userIds): void
     {
         foreach (array_chunk($userIds, 500) as $ids) {
+            if (Schema::hasTable('members') && DB::table('members')->whereIn('user_id', $ids)->lockForUpdate()->first() !== null) {
+                throw new DomainException('Los usuarios importados tienen membresías bibliotecarias. La reversión requiere revisión manual.');
+            }
             if (Schema::hasTable('audit_events')
                 && DB::table('audit_events')->whereIn('user_id', $ids)->lockForUpdate()->first() !== null) {
                 throw new DomainException('Los usuarios importados tienen actividad de auditoría. La reversión requiere revisión manual.');
@@ -443,12 +463,14 @@ final class LegacyMigrationService
      */
     private function assertImportedBooksUnused(array $bookIds): void
     {
-        if (! Schema::hasTable('audit_events')) {
-            return;
-        }
-
         foreach (array_chunk($bookIds, 500) as $ids) {
-            if (DB::table('audit_events')->where('subject_type', 'Book')->whereIn('subject_id', $ids)
+            if (Schema::hasTable('book_copies') && DB::table('book_copies')->whereIn('book_id', $ids)->lockForUpdate()->first() !== null) {
+                throw new DomainException('Los libros importados tienen ejemplares de inventario. La reversión requiere revisión manual.');
+            }
+            if (Schema::hasTable('circulation_requests') && DB::table('circulation_requests')->whereIn('book_id', $ids)->lockForUpdate()->first() !== null) {
+                throw new DomainException('Los libros importados tienen registros de circulación. La reversión requiere revisión manual.');
+            }
+            if (Schema::hasTable('audit_events') && DB::table('audit_events')->where('subject_type', 'Book')->whereIn('subject_id', $ids)
                 ->lockForUpdate()->first() !== null) {
                 throw new DomainException('Los libros importados tienen actividad de auditoría. La reversión requiere revisión manual.');
             }

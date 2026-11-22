@@ -4,8 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\AuditEvent;
 use App\Models\Book;
+use App\Models\BookCopy;
 use App\Models\ImportBatch;
+use App\Models\Member;
 use App\Models\User;
+use App\Services\CirculationService;
 use App\Services\LegacyMigrationService;
 use Closure;
 use DomainException;
@@ -483,5 +486,39 @@ class LegacyMigrationTest extends TestCase
         $this->assertDatabaseCount('users', 0);
         $this->assertDatabaseCount('books', 0);
         $this->assertDatabaseCount('import_batches', 0);
+    }
+
+    /** @return array<string, array{string, string}> */
+    public static function libraryReferences(): array
+    {
+        return ['ejemplar' => ['copy', 'ejemplares'], 'socio' => ['member', 'membresías'], 'solicitud' => ['request', 'circulación']];
+    }
+
+    #[DataProvider('libraryReferences')]
+    public function test_rollback_and_dry_run_refuse_records_used_by_the_library(string $kind, string $message): void
+    {
+        $batchId = $this->applyFixture();
+        $book = Book::where('legacy_id', 83)->sole();
+        $user = User::where('legacy_id', 41)->sole();
+        if ($kind === 'copy') {
+            BookCopy::factory()->create(['book_id' => $book->id]);
+        } elseif ($kind === 'member') {
+            Member::enroll($user);
+        } else {
+            $reader = User::factory()->create();
+            Member::enroll($reader);
+            app(CirculationService::class)->requestBook($reader, $book->id);
+        }
+        foreach ([true, false] as $dryRun) {
+            try {
+                app(LegacyMigrationService::class)->rollback($batchId, $dryRun);
+                $this->fail('Debe conservarse el lote referenciado.');
+            } catch (DomainException $exception) {
+                $this->assertStringContainsString($message, $exception->getMessage());
+            }
+        }
+        $this->assertDatabaseHas('users', ['id' => $user->id]);
+        $this->assertDatabaseHas('books', ['id' => $book->id]);
+        $this->assertDatabaseHas('import_batches', ['id' => $batchId, 'rolled_back_at' => null]);
     }
 }

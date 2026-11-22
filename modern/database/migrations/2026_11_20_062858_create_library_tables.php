@@ -53,6 +53,8 @@ return new class extends Migration
         Schema::dropIfExists('books');
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign(['import_batch_id']);
+            $table->dropIndex(['role']);
+            $table->dropUnique(['legacy_id']);
             $table->dropColumn(['role', 'legacy_id', 'import_batch_id', 'deleted_at']);
         });
         Schema::dropIfExists('import_batches');

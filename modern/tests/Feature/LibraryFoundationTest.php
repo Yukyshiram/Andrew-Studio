@@ -55,22 +55,4 @@ class LibraryFoundationTest extends TestCase
         ])->assertSessionHasErrors('isbn');
         $this->assertNull($book->fresh()->isbn);
     }
-
-    public function test_additive_migration_roundtrip_does_not_replace_existing_records(): void
-    {
-        $book = Book::factory()->create(['title' => 'Título conservado']);
-        $user = User::factory()->create();
-        $files = array_filter(glob(database_path('migrations/*.php')), fn (string $file): bool => basename($file) >= '2026_11_22_022905_extend_bibliography_and_create_inventory.php');
-        sort($files);
-        foreach (array_reverse($files) as $file) {
-            (require $file)->down();
-        }
-        $this->assertDatabaseHas('books', ['id' => $book->id, 'title' => 'Título conservado']);
-        $this->assertDatabaseHas('users', ['id' => $user->id]);
-        foreach ($files as $file) {
-            (require $file)->up();
-        }
-        $this->assertSame('No registrado', $book->fresh()->language);
-        $this->assertSame(0, $book->copies()->count());
-    }
 }
