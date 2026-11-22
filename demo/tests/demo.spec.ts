@@ -613,7 +613,7 @@ test("capturas después: todas las pantallas en escritorio, tablet y móvil", as
   );
   test.setTimeout(90000);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  const folder = path.resolve("docs/screenshots/v2.6/after");
+  const folder = path.resolve(process.env.DEMO_SCREENSHOT_DIR || "docs/screenshots/v2.6/after");
   await fs.mkdir(folder, { recursive: true });
   const sizes: Record<string, unknown> = {};
   async function shot(name: string) {
@@ -692,7 +692,7 @@ test("capturas después: todas las pantallas en escritorio, tablet y móvil", as
     await page.keyboard.press("Escape");
   }
   await fs.writeFile(
-    "docs/evidence/ux26-screen-sizes.json",
+    process.env.DEMO_SIZES_FILE || "docs/evidence/ux26-screen-sizes.json",
     JSON.stringify({ recordedAt: new Date().toISOString(), sizes }, null, 2) +
       "\n",
   );

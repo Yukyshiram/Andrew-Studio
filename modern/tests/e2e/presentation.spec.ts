@@ -10,7 +10,7 @@ test("capturas y medición reproducible de la presentación local", async ({
     browser,
 }) => {
     test.setTimeout(120_000);
-    const screenshots = path.resolve("../docs/screenshots");
+    const screenshots = path.resolve(process.env.PRESENTATION_SCREENSHOT_DIR || "../docs/screenshots");
     await fs.mkdir(screenshots, { recursive: true });
     await page.addInitScript(() => {
         const metrics = { lcp: 0, cls: 0, longTasks: 0 };
@@ -124,7 +124,7 @@ test("capturas y medición reproducible de la presentación local", async ({
             "La cadencia rAF durante interacción no certifica FPS de GPU ni rendimiento universal. LCP/CLS son observaciones de laboratorio, no percentiles de campo.",
     };
     await fs.writeFile(
-        "../docs/evidence/browser-performance.json",
+        process.env.PRESENTATION_EVIDENCE_FILE || "../docs/evidence/browser-performance.json",
         JSON.stringify(report, null, 2),
     );
     await page.goto("/catalog");

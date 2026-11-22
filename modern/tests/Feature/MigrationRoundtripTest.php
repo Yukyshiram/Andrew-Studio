@@ -77,13 +77,14 @@ class MigrationRoundtripTest extends TestCase
         foreach (array_reverse($files) as $file) {
             (require $file)->down();
         }
-        Storage::fake('local');
-        Storage::disk('local')->put('pre-v3.json', json_encode([
+        $disk = 'migration-roundtrip-'.DB::getDefaultConnection();
+        Storage::fake($disk);
+        Storage::disk($disk)->put('pre-v3.json', json_encode([
             'version' => 1,
             'users' => [['id' => 41, 'email' => 'legacy.sintetico@example.test', 'password' => Hash::make('Clave-Sintetica2026!')]],
             'catalogo_books' => [['id_libro' => 83, 'Nombre_book' => 'Registro histórico sintético', 'Autor_book' => 'Autora ficticia', 'Editorial_book' => 'Editorial QA', 'Año_Salida_book' => 'X / 1984', 'Des_book' => 'Descripción original conservada.']],
         ], JSON_THROW_ON_ERROR));
-        $batch = app(LegacyMigrationService::class)->import(Storage::disk('local')->path('pre-v3.json'))['batch_id'];
+        $batch = app(LegacyMigrationService::class)->import(Storage::disk($disk)->path('pre-v3.json'))['batch_id'];
         foreach ($files as $file) {
             (require $file)->up();
         }
