@@ -1,0 +1,45 @@
+name: bibliotecary-v3-qa
+services:
+  db-test:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: bibliotecary_v3_qa
+      MYSQL_USER: qa_library
+      MYSQL_PASSWORD: ${LIBRARY_QA_PASSWORD:?Genera primero el entorno local de pruebas}
+      MYSQL_ROOT_PASSWORD: ${LIBRARY_QA_PASSWORD:?Falta contraseña local de pruebas}
+    tmpfs:
+      - /var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysql -h 127.0.0.1 -u\"$$MYSQL_USER\" -D\"$$MYSQL_DATABASE\" -e 'SELECT 1' >/dev/null 2>&1"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+      start_period: 20s
+  app-test:
+    image: bibliotecary-v2-app
+    entrypoint: ["docker-php-entrypoint"]
+    environment:
+      APP_ENV: testing
+      APP_KEY: ${LIBRARY_QA_APP_KEY:?Falta clave local de pruebas}
+      APP_URL: http://localhost:8081
+      DB_CONNECTION: mysql
+      DB_HOST: db-test
+      DB_PORT: 3306
+      DB_DATABASE: bibliotecary_v3_qa
+      DB_USERNAME: qa_library
+      DB_PASSWORD: ${LIBRARY_QA_PASSWORD}
+      DB_URL: ""
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      MAIL_MAILER: array
+      QUEUE_CONNECTION: sync
+    volumes:
+      - .:/var/www/html
+      - existing_vendor:/var/www/html/vendor
+    depends_on:
+      db-test:
+        condition: service_healthy
+volumes:
+  existing_vendor:
+    external: true
+    name: bibliotecary-v2_modern_vendor
