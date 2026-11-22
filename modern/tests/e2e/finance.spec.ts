@@ -28,10 +28,11 @@ test("tesorería real: cargo exacto, consulta privada, pago, reversión e histor
         reducedMotion: "reduce",
     });
     const reader = await readerContext.newPage();
-    const folder =
-        browserName === "chromium"
-            ? "../docs/screenshots/v3/finance"
-            : `../docs/screenshots/v3/finance/${browserName}`;
+    const folder = process.env.FINANCE_SCREENSHOT_DIR
+        ? `${process.env.FINANCE_SCREENSHOT_DIR}/${browserName}`
+        : browserName === "chromium"
+          ? "../docs/screenshots/v3/finance"
+          : `../docs/screenshots/v3/finance/${browserName}`;
     await fs.mkdir(folder, { recursive: true });
     for (const surface of [page, reader]) {
         surface.on("pageerror", (error) => errors.push(error.message));
