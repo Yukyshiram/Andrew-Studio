@@ -43,7 +43,10 @@ export default function Policy({ policy }: { policy: LibraryTerms }) {
             <Notice>
                 Los importes se expresan en centavos: 100 = una unidad
                 monetaria. No hay cobros en línea. Las tarifas iniciales son
-                cero; configura únicamente las aprobadas por tu biblioteca.
+                cero; configura únicamente las aprobadas por tu biblioteca. Un
+                saldo máximo de 0 desactiva el bloqueo por deuda; con otro valor
+                se bloquea al superarlo, incluyendo cargos calculados pendientes
+                de registrar.
             </Notice>
             <form
                 className="library-form"

@@ -53,7 +53,7 @@ export default function Circulation({
     const maintenance = useForm({});
     function open(next: Action) {
         form.clearErrors();
-        form.reset();
+        form.setData({ reason: "", condition: "good" });
         setAction(next);
     }
     function submit() {

@@ -34,7 +34,7 @@ export function Button({
     variant,
     size,
     ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> &
+}: React.ComponentProps<"button"> &
     VariantProps<typeof buttonVariants> & { asChild?: boolean }) {
     const Comp = asChild ? Slot : "button";
     return (
@@ -222,6 +222,7 @@ export function Dialog({
     description,
     children,
     fallbackFocusRef,
+    returnFocusRef,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -229,6 +230,7 @@ export function Dialog({
     description: string;
     children: React.ReactNode;
     fallbackFocusRef?: React.RefObject<HTMLElement | null>;
+    returnFocusRef?: React.RefObject<HTMLElement | null>;
 }) {
     const restoreFocus = React.useRef<HTMLElement | null>(null);
     React.useLayoutEffect(() => {
@@ -243,13 +245,22 @@ export function Dialog({
                 <DialogPrimitive.Content
                     className="dialog-content"
                     onCloseAutoFocus={(event) => {
-                        const target =
-                            restoreFocus.current?.isConnected &&
-                            !restoreFocus.current.matches(
-                                ':disabled, [aria-disabled="true"]',
-                            )
-                                ? restoreFocus.current
-                                : fallbackFocusRef?.current;
+                        const candidates = returnFocusRef
+                            ? [
+                                  returnFocusRef.current,
+                                  fallbackFocusRef?.current,
+                                  restoreFocus.current,
+                              ]
+                            : [restoreFocus.current, fallbackFocusRef?.current];
+                        const target = candidates.find(
+                            (element) =>
+                                element?.isConnected &&
+                                element !== document.body &&
+                                element !== document.documentElement &&
+                                !element.matches(
+                                    ':disabled, [aria-disabled="true"]',
+                                ),
+                        );
                         if (target?.isConnected) {
                             event.preventDefault();
                             target.focus({ preventScroll: true });

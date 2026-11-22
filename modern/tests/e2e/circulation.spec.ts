@@ -6,6 +6,7 @@ test("circulación real: lector solicita, personal entrega, renueva, avisa y dev
     page,
     browser,
     baseURL,
+    browserName,
 }) => {
     test.setTimeout(90_000);
     const errors: string[] = [];
@@ -27,9 +28,9 @@ test("circulación real: lector solicita, personal entrega, renueva, avisa y dev
                 external.push(request.url());
         });
     }
-    const folder =
-        process.env.CIRCULATION_SCREENSHOT_DIR ||
-        "../docs/screenshots/v3/laravel";
+    const folder = process.env.CIRCULATION_SCREENSHOT_DIR
+        ? `${process.env.CIRCULATION_SCREENSHOT_DIR}/${browserName}`
+        : "../docs/screenshots/v3/laravel";
     await fs.mkdir(folder, { recursive: true });
     try {
         const unique = Date.now();
@@ -175,7 +176,9 @@ test("circulación real: lector solicita, personal entrega, renueva, avisa y dev
             fullPage: true,
         });
 
-        const renewalFolder = "../docs/screenshots/v3/renewals";
+        const renewalFolder = process.env.RENEWAL_SCREENSHOT_DIR
+            ? `${process.env.RENEWAL_SCREENSHOT_DIR}/${browserName}`
+            : "../docs/screenshots/v3/renewals";
         await fs.mkdir(renewalFolder, { recursive: true });
         await reader
             .getByRole("button", {

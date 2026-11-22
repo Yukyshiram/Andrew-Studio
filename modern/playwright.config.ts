@@ -11,7 +11,14 @@ export default defineConfig({
     reporter: [
         ["list"],
         ["html", { outputFolder: "output/playwright/report", open: "never" }],
-        ["json", { outputFile: "output/playwright/results.json" }],
+        [
+            "json",
+            {
+                outputFile:
+                    process.env.E2E_RESULTS_FILE ||
+                    "output/playwright/results.json",
+            },
+        ],
     ],
     use: {
         baseURL: process.env.E2E_BASE_URL || "http://localhost:8082",
@@ -28,5 +35,23 @@ export default defineConfig({
                 viewport: { width: 1440, height: 1000 },
             },
         },
+        ...(process.env.E2E_ALL_BROWSERS === "1"
+            ? [
+                  {
+                      name: "firefox",
+                      use: {
+                          ...devices["Desktop Firefox"],
+                          viewport: { width: 1440, height: 1000 },
+                      },
+                  },
+                  {
+                      name: "webkit",
+                      use: {
+                          ...devices["Desktop Safari"],
+                          viewport: { width: 1440, height: 1000 },
+                      },
+                  },
+              ]
+            : []),
     ],
 });

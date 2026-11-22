@@ -14,6 +14,7 @@ import {
     Sun,
     UserRound,
     Users,
+    WalletCards,
     X,
 } from "lucide-react";
 import { roles, type SharedProps } from "../types";
@@ -105,6 +106,12 @@ function NavigationContent({ mobile = false }: { mobile?: boolean }) {
             href: "/manage/policy",
             icon: ShieldCheck,
             label: "Políticas",
+            show: can.manageUsers,
+        },
+        {
+            href: "/manage/finance",
+            icon: WalletCards,
+            label: "Tesorería",
             show: can.manageUsers,
         },
         {

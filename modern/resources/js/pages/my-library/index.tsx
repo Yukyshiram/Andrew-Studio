@@ -2,6 +2,7 @@ import { Link, useForm } from "@inertiajs/react";
 import { useRef, useState } from "react";
 import { AppShell } from "../../components/layout";
 import { RenewLoanButton } from "../../components/renew-loan";
+import { AccountSummary, FinancialLedger } from "../../components/finance-ui";
 import { PaginationLinks } from "../../components/books";
 import {
     LibraryErrors,
@@ -20,6 +21,8 @@ import {
 } from "../../components/ui";
 import type {
     CirculationRecord,
+    FinancialEntry,
+    FinancialSummary,
     LibraryNotice,
     Loan,
     Member,
@@ -35,6 +38,8 @@ export default function MyLibrary({
     requests,
     loans,
     notices,
+    account,
+    entries,
     stats,
     view,
     today,
@@ -44,6 +49,8 @@ export default function MyLibrary({
     requests: Pagination<CirculationRecord> | null;
     loans: Pagination<Loan> | null;
     notices: Pagination<LibraryNotice> | null;
+    account: FinancialSummary | null;
+    entries: Pagination<FinancialEntry> | null;
     stats: {
         active: number;
         overdue: number;
@@ -119,6 +126,11 @@ export default function MyLibrary({
                                 label: `Avisos (${stats?.unread ?? 0})`,
                                 href: "/my-library?view=notices",
                             },
+                            {
+                                key: "finance",
+                                label: "Cargos y saldo",
+                                href: "/my-library?view=finance",
+                            },
                         ]}
                     />
                     <LibraryErrors errors={form.errors} />
@@ -131,6 +143,29 @@ export default function MyLibrary({
                         {timezone}). Solicitar o reservar no confirma una
                         entrega física.
                     </p>
+                    {account && entries && (
+                        <>
+                            <AccountSummary account={account} />
+                            <p>
+                                El saldo total incluye cargos calculados
+                                pendientes de registrar. Los pagos se registran
+                                con el personal autorizado después de recibirlos
+                                por otros medios.
+                            </p>
+                            <SubmitButton
+                                variant="secondary"
+                                processing={form.processing}
+                                onClick={() =>
+                                    form.post("/my-library/finance/refresh", {
+                                        preserveScroll: true,
+                                    })
+                                }
+                            >
+                                Actualizar mis cargos
+                            </SubmitButton>
+                            <FinancialLedger entries={entries} />
+                        </>
+                    )}
                     {notices && (
                         <>
                             {notices.data.length ? (

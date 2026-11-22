@@ -14,12 +14,14 @@ export function RenewLoanButton({
     const [open, setOpen] = useState(false);
     const token = useRef("");
     const fallback = useRef<HTMLSpanElement>(null);
+    const trigger = useRef<HTMLButtonElement>(null);
     const form = useForm({ operation_key: "" });
     const exhausted = loan.renewal_count >= loan.terms.max_renewals;
 
     return (
         <span className="library-renewal" ref={fallback} tabIndex={-1}>
             <Button
+                ref={trigger}
                 variant="ghost"
                 disabled={exhausted}
                 onClick={() => {
@@ -37,6 +39,7 @@ export function RenewLoanButton({
                 open={open}
                 onOpenChange={setOpen}
                 fallbackFocusRef={fallback}
+                returnFocusRef={trigger}
                 title="Renovar préstamo"
                 description={`Vencimiento actual: ${libraryDate(loan.due_on)}. Se comprobarán la membresía, los límites, los vencimientos y las solicitudes de otras personas. La biblioteca calculará la nueva fecha.`}
             >

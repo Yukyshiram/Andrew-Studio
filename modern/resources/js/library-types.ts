@@ -82,3 +82,36 @@ export interface Loan {
     returned_condition: string | null;
     terms: LibraryTerms;
 }
+
+export interface FinancialSummary {
+    recorded_cents: number;
+    pending_cents: number;
+    balance_cents: number;
+    currency: string;
+}
+
+export interface FinancialEntry {
+    id: number;
+    member_id: number;
+    loan_id: number | null;
+    actor_id: number | null;
+    kind:
+        | "overdue"
+        | "lost"
+        | "damage"
+        | "payment"
+        | "credit"
+        | "adjustment"
+        | "reversal";
+    amount_cents: number;
+    currency: string;
+    occurred_on: string;
+    timezone: string;
+    created_at: string;
+    reason: string;
+    reference: string | null;
+    reversal_of: number | null;
+    reversal: { id: number; reversal_of: number } | null;
+    actor: { id: number; name: string } | null;
+    member?: Member;
+}
