@@ -210,8 +210,8 @@ Las nuevas ramas parten de `main` actualizado y utilizan `feature/`, `fix/`, `re
     <h1 align="center">Hola, soy Jesús Vallejo! 👋</h1>
     <h3 align="center">🚀 Full Stack Developer | 🎨 UI/UX Designer | 🧠 Project Manager </h3>
 
-    <p>Las malas ideas siempre son las mejores.<br>
-    ~Im_JVallejo</p>
+<p>Las malas ideas siempre son las mejores.<br>
+~Im_JVallejo</p>
 </div>
 
 <div id="badges" align="center">
