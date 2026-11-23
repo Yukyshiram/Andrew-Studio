@@ -2,7 +2,7 @@
 
 Sistema bibliotecario en español con consulta pública, cuentas y permisos reales. Conserva la catalogación original y añade ISBN/edición/idioma, socios, ejemplares, políticas, solicitudes, preparación y entrega, préstamos, devoluciones, renovaciones, reservas, avisos internos, tesorería e incorporaciones. Sus paneles consultan la base de datos; no muestran cifras de demostración insertadas en el frontend. La demo estática independiente vive en `../demo/`.
 
-La aplicación está en `modern/`. El PHP original se conserva en la raíz y usa otra base de datos. La instalación nueva no importa datos históricos ni publica servicios fuera de loopback.
+La aplicación está en `modern/`. El PHP original permanece recuperable en el historial y no forma parte de la estructura activa de `main`. La instalación nueva no importa datos históricos ni publica servicios fuera de loopback. La [demo pública](https://andrews-bibliotecary.vercel.app) es una ejecución estática independiente; este backend no está desplegado públicamente.
 
 ![Panel bibliotecario de Andrew's Bibliotecary 3.0 con datos sintéticos](../docs/screenshots/readme/panel-laravel.webp)
 
@@ -36,17 +36,8 @@ Composer instala en el volumen Docker `modern_vendor`, compartido por `app` y `a
 | Laravel 3.0 | [localhost:8081](http://localhost:8081) | MySQL 8.4 independiente, volumen `modern_database` del proyecto Compose |
 | Buzón Mailpit | [localhost:8026](http://localhost:8026) | Correo de recuperación capturado localmente; sin entrega externa |
 | Aplicación E2E | [localhost:8082](http://localhost:8082) | Solo perfil `qa`; SQLite privado separado |
-| Legado | [127.0.0.1:8080](http://127.0.0.1:8080) | Proyecto y volumen originales; host distinto del moderno |
 
-Para iniciar el legado desde la raíz, conserva la carga automática del override nuevo:
-
-```powershell
-docker compose up -d --build
-```
-
-`compose.override.yaml` de la raíz oculta `modern/`, `.local/`, `.git/` y `docs/` al servidor antiguo. Es necesario porque su DocumentRoot abarca la raíz del repositorio. No lo omitas usando únicamente `-f compose.yaml`. El PHP legado conserva riesgos propios y debe permanecer local; consulta la [auditoría](../docs/02_AUDITORIA_SEGURIDAD.md).
-
-La dirección del legado cambia explícitamente a `http://127.0.0.1:8080`, mientras la aplicación moderna usa `http://localhost:8081`. Cambiar solo de puerto no separa cookies: estos hosts distintos evitan compartir las cookies y XSRF con el PHP antiguo. Se verificó HTTP 302 desde `localhost:8080` hacia `http://127.0.0.1:8080/` antes de ejecutar PHP y HTTP 200 en el destino. Las comprobaciones de archivos privados (referencia histórica o evidencia local no publicada) devolvieron 404. No se modificaron las fuentes originales para introducir este aislamiento.
+Los archivos Compose y endpoints del legado ya no están en la raíz de esta rama. No es necesario recuperar ni iniciar el sistema antiguo para usar Laravel. Su evaluación histórica permanece en la [auditoría](../docs/02_AUDITORIA_SEGURIDAD.md); la importación conservadora se explica en [migración y reversión](../docs/06_MIGRACION.md).
 
 ## Recorrido de demostración
 
@@ -97,7 +88,7 @@ El script ejecuta PHPUnit tanto en SQLite en memoria como en MySQL 8.4 aislado, 
 
 La regresión 3.0 verificó 276 pruebas PHP: SQLite, 272 aprobadas y cuatro exclusivas de MySQL omitidas, con 1.869 aserciones; MySQL, 276 aprobadas y 1.929 aserciones. Pasaron PHPStan, TypeScript, build, auditorías y los 23 recorridos Playwright nativos. Las cifras de 96 pruebas/639 aserciones y 16 recorridos corresponden al [registro histórico 2.0](../docs/08_PRUEBAS_RENDIMIENTO_Y_ACCESIBILIDAD.md). Los resultados actuales y su alcance están en el [informe 3.0](../docs/22_RESULTADOS_Y_LIMITES_3.md); no equivalen a certificación de accesibilidad ni preparación automática para producción.
 
-La medición histórica de rendimiento (referencia histórica o evidencia local no publicada) registra LCP, FCP, TTFB, CLS y cadencia rAF en Chromium, Windows y backend caliente. Incluía una escena WebGL opcional, retirada de la versión actual por petición del usuario. Se conservan las portadas editoriales, sin control ni animación de apertura. Los resultados históricos dependen de ese entorno y no certifican FPS de GPU ni rendimiento móvil. Los resultados de validación se conservan localmente; el repositorio incluye cuatro capturas representativas del producto. Consulta el [informe de pruebas](../docs/08_PRUEBAS_RENDIMIENTO_Y_ACCESIBILIDAD.md) y la [comparación y operación](../docs/09_COMPARACION_Y_OPERACION.md).
+La medición histórica de rendimiento (referencia histórica o evidencia local no publicada) registra LCP, FCP, TTFB, CLS y cadencia rAF en Chromium, Windows y backend caliente. Incluía una escena WebGL opcional, retirada de la versión actual por petición del usuario. Se conservan las portadas editoriales, sin control ni animación de apertura. Los resultados históricos dependen de ese entorno y no certifican FPS de GPU ni rendimiento móvil. Los resultados de validación se conservan localmente; el repositorio incluye [seis capturas seleccionadas](../docs/screenshots/readme/) y distingue las de la demo de la del backend. Consulta el [informe de pruebas](../docs/08_PRUEBAS_RENDIMIENTO_Y_ACCESIBILIDAD.md) y la [comparación y operación](../docs/09_COMPARACION_Y_OPERACION.md).
 
 ## Datos, respaldo y parada
 
