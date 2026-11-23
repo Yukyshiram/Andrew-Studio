@@ -1,5 +1,7 @@
 # Licencias, dependencias y riesgos pendientes
 
+> Registro histórico de la entrega 2.0. Los módulos de circulación, ISBN y las pruebas MySQL posteriores están documentados en [resultados y riesgos 3.0](22_RESULTADOS_Y_LIMITES_3.md). Las cifras y limitaciones de esta página describen su revisión original.
+
 Inventario revisado el 20 de noviembre de 2026. Describe el árbol y lockfiles de esta entrega local; no constituye asesoramiento jurídico ni certificación de seguridad, accesibilidad o preparación para producción.
 
 ## Licencia de la aplicación

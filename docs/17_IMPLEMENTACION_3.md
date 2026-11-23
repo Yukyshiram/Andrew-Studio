@@ -1,6 +1,6 @@
 # Implementación de Andrew's Bibliotecary 3.0
 
-Este es un registro de avance, no una declaración de versión completa. El alcance íntegro está en [Dominio y etapas](16_DOMINIO_BIBLIOTECARIO_3.md). La misión sigue activa hasta comprobar circulación, reservas, tesorería, novedades, demo y entregables finales.
+Este registro documenta las puertas locales A–F. El alcance está en [Dominio y etapas](16_DOMINIO_BIBLIOTECARIO_3.md); el cierre funcional, la cobertura, las guías y las limitaciones están en [Resultados 3.0](22_RESULTADOS_Y_LIMITES_3.md). No se declara una publicación ni preparación automática para producción.
 
 ## Etapa A verificada
 
@@ -87,7 +87,21 @@ Los estilos nuevos se cargan por vista: CSS de noticias compartido con la futura
 
 La migración E se aplicó a la base local con respaldo privado, comparación de columnas históricas y sin seeding. El respaldo real continúa sin prueba de restauración. Se verificaron de nuevo los 34 archivos frente a la base 2.6, la licencia y las referencias protegidas: [conservación](evidence/v3-preservation-after-acquisitions.json). No hubo push, merge ni despliegue.
 
-Commits E: `4590b24` modelo/operaciones; `ce93958` responsable de adquisición y reversión; `f3f15e4` muestra protegida; `f91fe4f` novedades/gestión; `b77fc7e` paneles y recorridos. F sigue pendiente: la demo pública todavía no reproduce la circulación 3.0. Ya se preparó una medición reproducible de su referencia previa; no mide FPS físicos ni sustituye el ciclo funcional.
+Commits E: `4590b24` modelo/operaciones; `ce93958` responsable de adquisición y reversión; `f3f15e4` muestra protegida; `f91fe4f` novedades/gestión; `b77fc7e` paneles y recorridos. La integración estática posterior se registra en F, sin publicar una URL externa.
+
+## Etapa F verificada
+
+La demo reutiliza presentación, controles, portadas y noticias; añade perfiles ficticios, cuenta lectora, ciclo completo de solicitud/preparación/entrega/renovación/devolución, disponibilidad, reserva/expiración, avisos, cuenta en centavos, pago/reversión y novedades. El estado es de memoria y el restablecimiento requiere confirmación. No autentica ni llama a Laravel/MySQL; no se restauró la escena 3D.
+
+La regresión final aprobó **65 de 69 casos Playwright**, con cuatro omisiones diagnósticas previstas y sin fallos ni reintentos: tres motores, tacto emulado, teclado, reflujo a 320 px, temas, reduced-motion, WebGL ausente y rutas profundas. Las **13 pruebas Node** y TypeScript de aplicación/pruebas aprobaron. Una prueba específica demostró primero que faltaba soporte efectivo de layout; se activó y comprobó la animación de la misma tarjeta al filtrar y su ausencia con movimiento reducido.
+
+Volvió a pasar la puerta Laravel: **272 PHP/1.869 aserciones en SQLite**, cuatro casos exclusivos omitidos; **276 PHP/1.929 en MySQL**, todos aprobados; PHPStan, TypeScript/build, auditorías y **23 recorridos nativos**. El MySQL de pruebas se detiene en `finally`; se rechazan orígenes E2E externos o de la aplicación principal. No cambió lógica PHP en F.
+
+Instalación independiente de demo: dependencias nuevas, sin backend, artefactos idénticos. Instalación limpia de Laravel y su repetición: otro proyecto Compose, nuevas dependencias/volúmenes y muestra protegida; entorno y datos conservados. Respaldo/restauración sintéticos aprobados; respaldo real sin restaurar. La medición antes/después documenta bytes, LCP, CLS y tareas largas, con memoria disponible diferente y sin afirmación de FPS físicos.
+
+[Evidencia F](evidence/v3-stage-f.json), [informe y límites](22_RESULTADOS_Y_LIMITES_3.md), [guía de demo](21_DEMO_CIRCULACION.md), [guía de uso real](23_GUIA_DE_USO_3.md) y [preparación de publicación](24_PREPARACION_PUBLICACION_3.md). Se generaron 72 capturas nuevas de demo. La documentación de portada se actualizó; las fuentes originales y referencias protegidas están comprobadas en la conservación final.
+
+Commits F: `24c7908` referencia de rendimiento; `9b8f3e0` motor; `8213dfa` recorridos; `ba9e683` QA MySQL/orígenes; `26f51ab` instalador protegido; `ea31dd5` layout/reduced-motion; `5439879` auditoría de tema. El commit documental final añade guías y resultados.
 
 ## Estado de las etapas restantes
 
@@ -97,9 +111,9 @@ Commits E: `4590b24` modelo/operaciones; `ce93958` responsable de adquisición y
 | C: reservas, renovación, vencimientos y avisos | Verificada | FIFO, caducidad, calendario, límites, avisos y concurrencia de renovación documentados arriba |
 | D: multas, movimientos, pagos, ajustes e informes | Verificada | Enteros, idempotencia, permisos, historial, reversión y concurrencia MySQL documentados arriba |
 | E: novedades y administración integrada | Verificada | Fechas separadas, incorporación con inventario, filtros, privacidad, métricas de BD y muestra protegida comprobadas arriba |
-| F: demo e integración visual | En preparación | Falta implementar el ciclo completo lector/bibliotecario sin backend, integrar CI/guías y verificar recargas, responsive, accesibilidad, rendimiento y regresión |
+| F: demo e integración visual | Verificada localmente | Ciclo completo, 13 Node, 65 Playwright, instalaciones independientes, guías, capturas y métricas con límites documentados |
 
-Las guías de lector/personal, documentación financiera, nuevas capturas, cobertura funcional y resumen final de commits se completarán con las funciones ejecutadas. No se anuncia un préstamo funcional por disponer únicamente de sus modelos.
+Las guías, documentación financiera, capturas, cobertura y commits están enlazados en el informe final. Los préstamos se comprobaron mediante operaciones reales y recorridos de demo, además de sus modelos. Publicación, CI remoto y preparación del hosting futuro siguen fuera de lo ejecutado.
 
 Commits de C: `feb267f` tablas de avisos/renovaciones; `0bee5d6` operaciones y controles; `b798ac8` interfaz y navegación por teclado; `d773b18` programador Docker local; `43eb46f` cierre de reservas con membresías inactivas y mensajes legibles. D incorporó la liquidación de periodos anteriores antes de renovar.
 

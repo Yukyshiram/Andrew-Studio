@@ -144,6 +144,7 @@ El manifiesto almacena IDs de destino y fingerprints SHA-256 de todos los atribu
 - Ningún atributo cambió desde la importación, incluidos rol, contraseña, timestamps o estado de papelera.
 - Los usuarios importados no se han usado en eventos de auditoría.
 - Los libros importados no tienen eventos de auditoría y las cuentas no tienen sesiones persistidas o tokens de recuperación pendientes.
+- En 3.0, ninguna cuenta ni ficha importada puede estar referenciada por socios, ejemplares, solicitudes, préstamos, movimientos o incorporaciones; también se comprueba al responsable de una incorporación. Un lote utilizado por el nuevo dominio no se elimina mediante el rollback del importador.
 
 Si cualquiera de esas condiciones falla, se cancela toda la reversión: no elimina una parte del lote ni modifica registros de otros lotes. Un cambio de esquema que altere los atributos también puede bloquear el fingerprint; requiere revisión, no un bypass.
 
@@ -153,6 +154,14 @@ No se ejecuta `migrate:rollback` para deshacer datos importados: eso revierte el
 
 ## Verificación y límites
 
-La suite `modern/tests/Feature/LegacyMigrationTest.php` cubre preservación del bcrypt y del año textual, roles de lector, dry-run, validación atómica, conflictos, importación duplicada, rollback por procedencia y rechazo cuando existen cambios posteriores. Su ejecución y resultados se registran en la documentación de pruebas; la presencia del archivo de pruebas no equivale a una ejecución exitosa.
+La suite `modern/tests/Feature/LegacyMigrationTest.php` cubre preservación del bcrypt y del año textual, roles de lector, dry-run, validación atómica, conflictos, importación duplicada, rollback por procedencia y rechazo cuando existen cambios posteriores. En 3.0 se añadieron referencias del dominio y del responsable de incorporaciones, y reversión de esquema en bases aisladas. Su ejecución y resultados se registran en la documentación de pruebas; la presencia del archivo de pruebas no equivale a una ejecución exitosa.
 
-Durante la implementación no se ejecuta el exportador sobre datos reales. La prueba de importación usa únicamente fixtures ficticias. El corte final, exportación de una instalación existente, promoción de roles y selección del sistema activo son decisiones operativas explícitas. La aplicación antigua puede mantenerse disponible en 8080 mientras se valida la 2.0 en 8081.
+Durante la implementación no se ejecuta el exportador sobre datos reales. La prueba de importación usa únicamente fixtures ficticias. El corte final, exportación de una instalación existente, promoción de roles y selección del sistema activo son decisiones operativas explícitas. La aplicación antigua puede mantenerse disponible en 8080 mientras se valida la moderna en 8081.
+
+## Actualizar de 2.6 a 3.0
+
+Las migraciones agregan ISBN/edición/idioma, socios, ejemplares, políticas/calendario, solicitudes, préstamos, avisos, renovaciones, movimientos e incorporaciones. Los campos bibliográficos anteriores —incluido el año textual— se conservan. No se infiere un ejemplar por ficha ni una membresía habilitada por cada cuenta histórica. No se importan archivos ni se ejecuta seeding sobre la base existente.
+
+Desde `modern/`, `node scripts/upgrade-local.mjs` crea un dump privado y una firma de las columnas históricas de `users`, `books`, `import_batches` y `audit_events`, entra en mantenimiento, aplica migraciones aditivas y compara el contenido anterior. Los respaldos quedan fuera de Git y de los artefactos públicos. Antes de usarlo hay que conservar la configuración del destino y asegurar que sus volúmenes sean los esperados.
+
+No se deshace una actualización utilizada borrando tablas nuevas. Deben detenerse escrituras, conservarse respaldo y esquema, conciliar las operaciones posteriores y probar un destino de recuperación. La vuelta de esquema se verificó con pruebas en SQLite/MySQL aislados. Además se comprobó un respaldo/restauración completo con datos sintéticos en otro proyecto Docker; no se restauró el respaldo real de la instalación conservada. [Evidencia y límites actuales](22_RESULTADOS_Y_LIMITES_3.md).

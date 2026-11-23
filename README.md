@@ -1,61 +1,69 @@
-# Andrew's Bibliotecary 2.6
+# Andrew's Bibliotecary 3.0
 
-Una biblioteca digital con diseño editorial y dos recorridos claros: explorar la colección o probar su administración.
+Una biblioteca con circulación completa en Laravel y una demo editorial que permite explorar el recorrido de lectura sin cuentas ni infraestructura de servidor.
 
-![Inicio de Andrew's Bibliotecary 2.6](docs/screenshots/v2.6/after/desktop-inicio.png)
+![Inicio de Andrew's Bibliotecary](docs/screenshots/v3/demo/presentation/desktop-inicio.png)
 
-## Ver el proyecto
+## Ver la demo en tiempo real
 
-Node.js 22.12+; se usa Node 24 en CI. La demo no necesita PHP, MySQL ni cuentas.
+Requiere Node.js 22.12+; el proyecto se verifica con Node 24.
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Abre `http://127.0.0.1:4173`. El servidor de desarrollo refleja los cambios al guardar.
+Abre [127.0.0.1:4173](http://127.0.0.1:4173). Los cambios se reflejan al guardar. La demo no necesita PHP, Composer, Docker, MySQL ni claves privadas.
+
+Para el artefacto estático:
 
 ```sh
 npm run build
 npm run preview
 ```
 
-El build genera exclusivamente `dist/`. Vercel debe utilizar la raíz del repositorio, instalación `npm ci`, build `npm run build` y salida `dist`. El fallback SPA de `vercel.json` permite recargar rutas profundas. Esta revisión no publica ni fusiona cambios.
+Elige **Lucía · Lectora**, solicita un libro y consulta **Mi biblioteca**. Cambia a **Mateo · Biblioteca** para preparar y confirmar la entrega. Regresa a Lucía para renovar; Biblioteca recibe la devolución. Las fechas, el historial y la disponibilidad cambian con el recorrido. [Guía de la demo](docs/21_DEMO_CIRCULACION.md).
 
-## Recorridos
+El selector es un cambio de personaje ficticio, **no autenticación**. Solicitudes, préstamos, cargos y pagos son simulaciones en memoria de esta pestaña; se reinician al recargar. No se mueve dinero. Solo la preferencia de tema puede persistir. Las 24 fichas, sus autorías, descripciones y editoriales son ficticias; no incluyen libros completos para leer o descargar.
 
-| Área | Rutas y comportamiento |
-|---|---|
-| Visitante | `/`, `/catalog`, `/catalog/:id`, `/about`. Buscar, filtrar, ordenar, paginar y consultar fichas |
-| Acceso secundario | «Probar panel administrador», separado del menú público |
-| Resumen de demostración | `/demo/admin`: métricas de la colección y acceso a la gestión |
-| Gestión de demostración | `/demo/admin/books`: tabla de 8 fichas, búsqueda, categoría/estado, alta y edición validadas, archivo confirmado, restauración y reset confirmado |
-| Ruta anterior | `/studio` redirige a `/demo/admin` |
+## Dos aplicaciones, un lenguaje visual
 
-El panel muestra **Modo demostración** y **Volver a la biblioteca**. Sus cambios viven únicamente en la memoria de la pestaña: recargar restablece la colección. Entrar al panel no autentica ni concede permisos reales. No existe login ficticio ni se guardan fichas en cookies o localStorage.
+| Área | Demo estática | Laravel |
+|---|---|---|
+| Catálogo y fichas | Búsqueda, categorías, orden, paginación y apertura CSS | Catálogo público, disponibilidad agregada, ISBN, edición e idioma |
+| Lectura | Perfiles ficticios y Mi biblioteca | Registro, sesión, membresía y cuenta privada |
+| Circulación | Solicitar, validar, preparar, entregar, renovar, devolver y cancelar | Operaciones persistentes, políticas configurables, transacciones y exclusión de préstamos simultáneos |
+| Reservas | Lista aprobada, siguiente ejemplar y reloj controlado | FIFO, caducidad, liberación programada y avisos internos |
+| Finanzas | Ejemplo de mora, pago manual y reversión | Cargos exactos, abonos, ajustes, pagos, reversiones e informes |
+| Administración | Fichas e inventario de muestra; seis ejemplares | Socios, inventario, usuarios, roles, políticas, historial y paneles basados en su base de datos |
+| Novedades | Anuncios ficticios y filtros por tema, estado y fecha | Incorporaciones gestionadas por personal, con fechas separadas y disponibilidad real |
 
-Las 24 obras, autorías y editoriales del JSON son ficticias. Sus descripciones son distintas y no se presentan como sinopsis auténticas. No hay archivos de lectura ni descargas. Se conserva la apertura CSS de las cubiertas; se retiraron Three.js, WebGL y los controles de escena 3D.
-
-## Laravel se conserva
-
-La aplicación completa permanece en `modern/`: autenticación, autorización, recuperación de cuentas, gestión de libros/personas, historial y migración reversible. Sus operaciones usan un servidor y MySQL; no se ejecutan en la demo ni se incluyen como PHP en `dist`. [Instalación y operación](modern/README.md).
-
-La demo reutiliza inicio, portadas, libro animado, controles accesibles y estilos desde `modern/resources`. `PresentationNavigation` adapta los enlaces a React Router o Inertia. Los shells distinguen la navegación simulada del acceso real.
+Se conservan verde oscuro, negro, ámbar, tipografía editorial y portadas propias. Hay tema claro, navegación por teclado y alternativas para movimiento reducido. **No hay Three.js, WebGL ni vista 3D**; la cubierta utiliza CSS.
 
 ```text
-demo/src/shell.tsx             Navegación de visitante y demostración
-demo/src/main.tsx              Inicio, catálogo, fichas y acerca
-demo/src/studio.tsx            Resumen y gestión de demostración
-demo/src/admin-book-form.tsx   Formulario y validación local
-demo/src/data/books.json       24 fichas ficticias diferenciadas
-modern/                       Aplicación Laravel y presentación compartida
-docs/                         Auditorías, decisiones, evidencia y capturas
+demo/                         React + TypeScript + Vite, con estado ficticio
+modern/                       Laravel 13 / PHP 8.4 / React 19 / Inertia 3 / MySQL 8.4
+modern/resources/js/components/ Portadas, controles, noticias y presentación compartidos
+docs/                         Dominio, guías, auditorías, evidencia y capturas
 ```
 
-## Calidad y pruebas
+## Aplicación con servidor
+
+Con Docker Desktop y Node disponibles:
+
+```powershell
+# Solo en una base nueva destinada a demostración:
+./modern/scripts/install.ps1 -Demo
+```
+
+La muestra 3.0 protege los datos existentes: solo admite entornos locales/de prueba, una base sintética compatible y el permiso explícito de seeding. No convierte una base real en una demo. Para actualizar una instalación existente, usa el procedimiento con respaldo de [operación de Laravel](modern/README.md).
+
+Laravel dispone de autorización real comprobada en servidor; el bibliotecario atiende circulación, socios e inventario, y el administrador añade roles, políticas y tesorería. [Guía de lector y personal](docs/23_GUIA_DE_USO_3.md). [Dominio y modelo de datos](docs/16_DOMINIO_BIBLIOTECARIO_3.md).
+
+## Calidad reproducible
 
 ```sh
-npm run typecheck
+npm run test:domain
 npm run build
 npm run security:check
 npm audit
@@ -63,22 +71,24 @@ npm run test:install
 npm test
 ```
 
-Playwright guarda sus navegadores dentro de `.local/browsers`. La suite usa el artefacto de producción en `127.0.0.1:4174`, separado del desarrollo en 4173. Verifica recorridos públicos/administrativos, formularios, confirmaciones, foco, móvil, reduced-motion, rutas profundas y Axe en los tres motores.
+Playwright usa el artefacto de producción en `127.0.0.1:4174` y navegadores guardados en `.local/browsers`. Comprueba los recorridos completos, recargas profundas, acciones táctiles, teclado, reflujo a 320 px, temas y movimiento reducido. La prueba del filtro observa el desplazamiento de una tarjeta conservada; no presenta muestreo rAF como FPS.
 
-Con Laravel y Docker disponibles:
+Para Laravel:
 
 ```powershell
-./modern/scripts/test.ps1
+./modern/scripts/test.ps1 -KeepTestServer
 ```
 
-[Auditoría y decisiones 2.6](docs/14_UX_2_6_CLARIDAD_Y_ROLES.md). [Resultados, límites y matriz de aceptación](docs/15_VALIDACION_UX_2_6.md). [Capturas antes](docs/screenshots/v2.6/before/) y [después](docs/screenshots/v2.6/after/).
+Incluye SQLite en memoria, MySQL de pruebas separado, PHPStan, TypeScript, build, auditorías y Playwright. El script detiene el MySQL efímero sin eliminar los volúmenes existentes; sus pruebas no se dirigen a la base principal. [Resultados, cobertura y límites](docs/22_RESULTADOS_Y_LIMITES_3.md). [Registro por etapas](docs/17_IMPLEMENTACION_3.md).
 
-## Historia y publicación
+## Vercel e historia
 
-Trabajo 2.6 en `codex/ux-role-clarity-2.6`. La versión previa sigue en `feature/interactive-demo` y su release preparado en `release/bibliotecary-v2`. Recuperación 2.0: `codex/bibliotecary-2` (`6752641`). Legado: `archive/legacy-v1` y `v1-legacy-final` desde `372dbf3`. La revisión 2.6 no mueve esas referencias ni `main`.
+Vercel debe compilar **desde la raíz** con `npm ci`, build `npm run build` y salida `dist`. `vercel.json` conserva el fallback SPA y las cabeceras de seguridad. El artefacto contiene exclusivamente la demo; Laravel no se publica como sitio estático. La URL pública se añadirá tras un despliegue autorizado y verificado. [Preparación del PR y publicación](docs/24_PREPARACION_PUBLICACION_3.md).
 
-Vercel y GitHub conservan su configuración previa; no se inicia sesión, crea un proyecto, publica un PR ni despliega en esta revisión. La URL pública se añadirá cuando exista un despliegue autorizado y verificado. [Preparación Vercel](docs/12_DEMO_ARQUITECTURA_Y_VERCEL.md).
+El trabajo 3.0 está en `codex/bibliotecary-3`. La base 2.6 se conserva en `codex/ux-role-clarity-2.6` (`827be7c`); la recuperación 2.0, en `codex/bibliotecary-2`. `archive/legacy-v1` y `v1-legacy-final` conservan el legado desde `372dbf3`. No se reescribe el historial ni se mueven esas referencias. La documentación de portada se actualiza; el código ejecutable original permanece recuperable e intacto.
+
+El PHP antiguo no pertenece al artefacto de Vercel. Una publicación futura de Laravel debe utilizar `modern/public/` como document root. No se debe servir la raíz del repositorio como aplicación PHP.
 
 ## Licencia
 
-[GPL-3.0-only](LICENSE). El build distribuye los avisos de 44 dependencias de ejecución en `/licenses/THIRD_PARTY_NOTICES.txt`. [Inventario](docs/evidence/demo-licenses.json).
+[GPL-3.0-only](LICENSE). Los avisos de 44 dependencias de ejecución se distribuyen en `/licenses/THIRD_PARTY_NOTICES.txt`; se mantienen sus licencias originales. [Inventario](docs/evidence/demo-licenses.json).

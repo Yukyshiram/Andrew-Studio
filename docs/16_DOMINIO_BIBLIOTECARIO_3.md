@@ -78,7 +78,7 @@ erDiagram
     USERS |o--o{ AUDIT_EVENTS : ejecuta
 ```
 
-`library_policies` contiene una configuración versionada, sin constantes de tarifas en el frontend. Las FK del dominio restringen eliminación de historia. Los campos y tablas se introducen mediante migraciones aditivas; no se reinterpretan títulos como ejemplares.
+En Laravel, `library_policies` contiene la configuración versionada; el frontend recibe sus valores y no define tarifas oficiales. La demo independiente centraliza una política exclusivamente ficticia en `library-domain.ts`. Las FK del dominio restringen eliminación de historia. Los campos y tablas se introducen mediante migraciones aditivas; no se reinterpretan títulos como ejemplares.
 
 ## Etapas y puertas de aceptación
 
