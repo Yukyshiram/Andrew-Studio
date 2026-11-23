@@ -13,7 +13,7 @@ import {
 } from "react-router-dom";
 import {
   LazyMotion,
-  domAnimation,
+  domMax,
   MotionConfig,
   m as motion,
   useReducedMotion,
@@ -350,7 +350,7 @@ function BookDetail() {
                 {tab === item.id && (
                   <motion.span
                     className="tab-underline"
-                    layoutId="editorial-tab"
+                    layoutId={reduced ? undefined : "editorial-tab"}
                   />
                 )}
               </button>
@@ -517,7 +517,7 @@ function App() {
     document.title = `${title} · Andrew's Bibliotecary`;
   }, [location.pathname, books]);
   return (
-    <LazyMotion features={domAnimation} strict>
+    <LazyMotion features={domMax} strict>
       <MotionConfig
         reducedMotion="user"
         transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}

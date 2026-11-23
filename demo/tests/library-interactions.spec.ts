@@ -7,6 +7,44 @@ import {
 } from "./library-helpers";
 
 const runtime = new WeakMap<Page, string[]>();
+test("reflujo a 320 px conserva acciones y desplazamiento dentro de la tabla", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  for (const [href, profile] of [
+    ["/catalog/1", "Lucía · Lectora"],
+    ["/my-library", "Lucía · Lectora"],
+    ["/demo/admin/circulation", "Mateo · Biblioteca"],
+    ["/demo/admin/finance", "Andrea · Administración"],
+    ["/news", "Visitante"],
+  ]) {
+    await page.goto(href);
+    await expect(page.locator("main h1")).toBeVisible();
+    if (profile !== "Visitante") await selectProfile(page, profile);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      href,
+    ).toBe(true);
+    await expect(
+      page.getByRole("button", { name: /^Cambiar perfil ficticio:/ }),
+    ).toBeVisible();
+    if (href.endsWith("circulation")) {
+      const table = page.getByRole("region", {
+        name: "Tabla de ejemplares ficticios",
+        exact: true,
+      });
+      await table.focus();
+      await expect(table).toBeFocused();
+      await page.keyboard.press("ArrowRight");
+      await expect
+        .poll(() => table.evaluate((element) => element.scrollLeft))
+        .toBeGreaterThan(0);
+      expect(await page.evaluate(() => scrollX)).toBe(0);
+    }
+  }
+});
 test.beforeEach(async ({ page, baseURL }) => {
   const errors: string[] = [];
   runtime.set(page, errors);

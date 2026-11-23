@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import * as Dialog from "@radix-ui/react-dialog";
-import { m as motion } from "motion/react";
+import { m as motion, useReducedMotion } from "motion/react";
 import {
   Library,
   LayoutDashboard,
@@ -60,6 +60,7 @@ function Navigation({
   close: (href: string) => void;
 }) {
   const { pathname } = useLocation();
+  const reduced = useReducedMotion();
   const links = admin
     ? [
         { href: "/demo/admin", label: "Resumen", Icon: LayoutDashboard },
@@ -129,7 +130,11 @@ function Navigation({
             >
               {active && (
                 <motion.span
-                  layoutId={`navigation-${admin ? "admin" : "visitor"}-${mobile ? "mobile" : "desktop"}`}
+                  layoutId={
+                    reduced
+                      ? undefined
+                      : `navigation-${admin ? "admin" : "visitor"}-${mobile ? "mobile" : "desktop"}`
+                  }
                   className="active-nav-surface"
                   transition={{ duration: 0.2 }}
                 />

@@ -1,4 +1,4 @@
-import { m as motion, AnimatePresence } from "motion/react";
+import { m as motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { DemoLink } from "./navigation";
 import { BookCover } from "../../modern/resources/js/components/book-cover";
 import { Badge } from "../../modern/resources/js/components/ui";
@@ -15,13 +15,14 @@ export function DemoBookCard({
   index?: number;
   ref?: Ref<HTMLElement>;
 }) {
+  const reduced = useReducedMotion();
   return (
     <motion.article
       ref={ref}
-      layout="position"
-      initial={{ opacity: 0, y: 12 }}
+      layout={reduced ? false : "position"}
+      initial={reduced ? { opacity: 0 } : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.97 }}
+      exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
       transition={{ duration: 0.24, delay: Math.min(index, 4) * 0.025 }}
       className="book-card"
     >
@@ -56,8 +57,9 @@ export function DemoBookCard({
   );
 }
 export function BookGrid({ books }: { books: Book[] }) {
+  const reduced = useReducedMotion();
   return (
-    <motion.div layout className="book-grid">
+    <motion.div layout={!reduced} className="book-grid">
       <AnimatePresence initial={false} mode="popLayout">
         {books.map((book, index) => (
           <DemoBookCard key={book.id} book={book} index={index} />
