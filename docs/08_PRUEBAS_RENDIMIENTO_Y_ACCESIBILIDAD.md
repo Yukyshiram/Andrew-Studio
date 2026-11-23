@@ -8,16 +8,16 @@ archivos y la base del legado. No se publicó ni desplegó el proyecto.
 
 | Comprobación | Resultado ejecutado | Evidencia |
 | --- | --- | --- |
-| Suite PHP completa | 96 pruebas, 639 aserciones; 0 fallos/errores/omisiones | [JUnit](evidence/phpunit-final.xml) |
+| Suite PHP completa | 96 pruebas, 639 aserciones; 0 fallos/errores/omisiones | JUnit (referencia histórica o evidencia local no publicada) |
 | Análisis PHP | PHPStan/Larastan nivel 5: sin errores | `phpstan.neon`, ejecución en Docker |
 | Formato PHP | Pint aplicado y verificado con rutas explícitas | Ejecución `vendor/bin/pint --format agent ...` |
 | TypeScript | `tsc --noEmit`: aprobado | `npm run typecheck` |
 | Compilación | Vite, configuración TypeScript explícita: aprobado | `npm run build`, manifiesto en `modern/public/build/` |
-| Playwright integrado | 16 pruebas aprobadas, 0 fallos, 0 reintentos inestables, 0 omitidas; 60.3 s | [Informe JSON](evidence/playwright-final.json) |
-| Axe | 5 pruebas aprobadas; revisión automatizada de 10 rutas principales y variantes claras | [Informe específico](evidence/accessibility-final.json) |
-| Dependencias npm | Sin vulnerabilidades reportadas en la auditoría final | [npm](evidence/npm-audit-final.json) |
-| Dependencias Composer | Sin advisories ni paquetes abandonados reportados | [Composer](evidence/composer-audit.json) |
-| Conservación del legado | 34 archivos SHA-256 idénticos; 0 cambios | [Manifiesto final](evidence/legacy-integrity-final.json) |
+| Playwright integrado | 16 pruebas aprobadas, 0 fallos, 0 reintentos inestables, 0 omitidas; 60.3 s | Informe JSON (referencia histórica o evidencia local no publicada) |
+| Axe | 5 pruebas aprobadas; revisión automatizada de 10 rutas principales y variantes claras | Informe específico (referencia histórica o evidencia local no publicada) |
+| Dependencias npm | Sin vulnerabilidades reportadas en la auditoría final | npm (referencia histórica o evidencia local no publicada) |
+| Dependencias Composer | Sin advisories ni paquetes abandonados reportados | Composer (referencia histórica o evidencia local no publicada) |
+| Conservación del legado | 34 archivos SHA-256 idénticos; 0 cambios | Manifiesto final (referencia histórica o evidencia local no publicada) |
 | Licencia | LICENSE original y copia moderna SHA-256 idénticos | Ambos archivos GPL-3.0 conservados |
 
 Los números de ejecuciones parciales anteriores no se suman a la suite completa.
@@ -79,7 +79,7 @@ PHP y sin `Set-Cookie`. El legado responde 200 en su host separado. Las rutas
 `/modern/.env`, `/.git/HEAD` y el respaldo privado devuelven 404. La separación de
 host evita que el frontend antiguo y el moderno compartan identidad de cookies
 por utilizar únicamente puertos distintos. Las máscaras de `compose.override.yaml`
-ocultan además los directorios nuevos y privados. [Evidencia](evidence/legacy-host-isolation.json).
+ocultan además los directorios nuevos y privados. Evidencia (referencia histórica o evidencia local no publicada).
 
 El legado conserva vulnerabilidades de su código, por diseño de conservación;
 no debe publicarse ni considerarse remediado por estas medidas operativas.
@@ -104,7 +104,7 @@ del archivo de evidencia corresponde a la noche local del 20 de noviembre.
 | WebGL tras activación voluntaria | Renderizado disponible |
 | Cadencia rAF durante interacción, 120 muestras | Media 16.665 ms; p95 16.7 ms |
 
-[Métricas completas y contexto](evidence/browser-performance.json). La cadencia
+Métricas completas y contexto (referencia histórica o evidencia local no publicada). La cadencia
 de callbacks, próxima a 60/s en este equipo, no certifica 60 FPS de GPU ni una
 garantía para otros dispositivos. LCP/CLS son una observación, no percentiles de
 usuarios reales ni resultados de Lighthouse. No se ejecutó una prueba de carga
@@ -122,14 +122,14 @@ fallidas previas se consideran diagnóstico y no resultados aprobados.
 
 ## Capturas y revisión visual
 
-Se generaron y revisaron capturas reales de [portada](screenshots/01-portada.png),
-[catálogo](screenshots/02-catalogo.png), [ficha](screenshots/03-ficha.png),
-[acceso](screenshots/04-acceso.png), [panel](screenshots/05-panel.png),
-[gestión](screenshots/06-gestion.png), [formulario](screenshots/07-formulario.png),
-[personas](screenshots/08-personas.png), [historial](screenshots/09-historial.png),
-[perfil](screenshots/10-perfil.png), [portada móvil](screenshots/11-portada-movil.png)
-y [catálogo móvil](screenshots/12-catalogo-movil.png), además del
-[estado antiguo](screenshots/00-legado.png). No son mockups.
+Se generaron y revisaron capturas reales de portada (referencia histórica o evidencia local no publicada),
+catálogo (referencia histórica o evidencia local no publicada), ficha (referencia histórica o evidencia local no publicada),
+acceso (referencia histórica o evidencia local no publicada), panel (referencia histórica o evidencia local no publicada),
+gestión (referencia histórica o evidencia local no publicada), formulario (referencia histórica o evidencia local no publicada),
+personas (referencia histórica o evidencia local no publicada), historial (referencia histórica o evidencia local no publicada),
+perfil (referencia histórica o evidencia local no publicada), portada móvil (referencia histórica o evidencia local no publicada)
+y catálogo móvil (referencia histórica o evidencia local no publicada), además del
+estado antiguo (referencia histórica o evidencia local no publicada). No son mockups.
 
 La captura del legado es opcional al reproducir la suite en una máquina donde
 no se haya iniciado el servidor antiguo; en esta ejecución sí se obtuvo.

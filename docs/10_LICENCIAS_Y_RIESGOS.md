@@ -12,7 +12,7 @@ Antes de distribuir una versión, deben conservarse los avisos y textos aplicabl
 
 ## Inventario de terceros
 
-Fuentes locales: [composer-licenses.json](evidence/composer-licenses.json) y [npm-licenses.json](evidence/npm-licenses.json). El inventario npm regenerado incluye 140 registros y ninguna licencia desconocida, ya con Prettier. Incluye herramientas de desarrollo, variantes opcionales por plataforma y versiones repetidas. La clasificación procede de metadatos declarados: no sustituye leer los textos de licencia ni inspeccionar el contenido de cada paquete.
+Fuentes locales: composer-licenses.json (referencia histórica o evidencia local no publicada) y npm-licenses.json (referencia histórica o evidencia local no publicada). El inventario npm regenerado incluye 140 registros y ninguna licencia desconocida, ya con Prettier. Incluye herramientas de desarrollo, variantes opcionales por plataforma y versiones repetidas. La clasificación procede de metadatos declarados: no sustituye leer los textos de licencia ni inspeccionar el contenido de cada paquete.
 
 Los textos de licencia y avisos de las dependencias frontend de ejecución,
 incluida la fuente Inter, se conservan sin cambios en
@@ -48,19 +48,19 @@ Las fichas de demostración, sus autorías y editoriales son ficticias. Las cubi
 
 | Instrumento / evidencia | Resultado registrado | Lo que no demuestra |
 | --- | --- | --- |
-| [npm-audit-initial.json](evidence/npm-audit-initial.json) | 0 vulnerabilidades informadas; 139 dependencias en su metadato | Ausencia de vulnerabilidades desconocidas o futuras; examen manual completo del código |
-| [npm-audit-final.json](evidence/npm-audit-final.json) | 0 vulnerabilidades informadas; 140 dependencias en su metadato final | Escaneo de imágenes Docker o garantía de seguridad futura |
-| [composer-audit.json](evidence/composer-audit.json) | Sin advisories ni paquetes abandonados informados | Escaneo del sistema operativo, PHP, MySQL o imágenes Docker |
-| [Inventarios npm](evidence/npm-licenses.json) y [Composer](evidence/composer-licenses.json) | Licencias declaradas y versiones de paquetes | Auditoría legal exhaustiva, provenance o SBOM completo de imágenes |
-| [security-phpunit.json](evidence/security-phpunit.json) | 48 casos backend distintos comprobados en ejecuciones documentadas | CSRF por HTTP real, escape en cada vista o entrega SMTP real |
-| [phpunit-final.xml](evidence/phpunit-final.xml) | Suite completa: 96 pruebas, 639 aserciones; sin fallos, errores u omisiones | Comportamiento completo del navegador o concurrencia de MySQL |
-| [accessibility-final.json](evidence/accessibility-final.json) | 5 pruebas axe aprobadas en 14,1 s, con vistas públicas, gestión, perfil y estados claros/oscuros | Revisión manual completa o conformidad WCAG integral |
-| [playwright-final.json](evidence/playwright-final.json) | Suite de navegador completa: 16 aprobados, sin fallos, omisiones ni inestables | Todas las combinaciones de dispositivos, despliegue externo o ensayo concurrente MySQL |
-| [browser-performance.json](evidence/browser-performance.json) | Medición local de carga, estabilidad y rAF; Three.js bajo demanda y WebGL activado al solicitarlo | Percentiles de campo, FPS de GPU o rendimiento universal |
-| [backend-review.json](evidence/backend-review.json) | Corrección de Host/URLs canónicas comprobada; 3 pruebas, 5 aserciones aprobadas | Suite completa del proyecto o revisión E2E final |
-| [security-operational-hardening.json](evidence/security-operational-hardening.json) | Portada antigua accesible; archivos concretos ocultos devuelven 404 | Corrección de los fallos restantes del PHP legado |
-| [legacy-host-isolation.json](evidence/legacy-host-isolation.json) | Tres archivos privados devuelven 404 con el legado aislado por host | Corrección de la lógica vulnerable del PHP antiguo |
-| [legacy-integrity-final.json](evidence/legacy-integrity-final.json) | 34 archivos originales con hashes conservados, sin cambios | Restauración ensayada de bases de datos o verificación de derechos sobre cada recurso heredado |
+| npm-audit-initial.json (referencia histórica o evidencia local no publicada) | 0 vulnerabilidades informadas; 139 dependencias en su metadato | Ausencia de vulnerabilidades desconocidas o futuras; examen manual completo del código |
+| npm-audit-final.json (referencia histórica o evidencia local no publicada) | 0 vulnerabilidades informadas; 140 dependencias en su metadato final | Escaneo de imágenes Docker o garantía de seguridad futura |
+| composer-audit.json (referencia histórica o evidencia local no publicada) | Sin advisories ni paquetes abandonados informados | Escaneo del sistema operativo, PHP, MySQL o imágenes Docker |
+| Inventarios npm (referencia histórica o evidencia local no publicada) y Composer (referencia histórica o evidencia local no publicada) | Licencias declaradas y versiones de paquetes | Auditoría legal exhaustiva, provenance o SBOM completo de imágenes |
+| security-phpunit.json (referencia histórica o evidencia local no publicada) | 48 casos backend distintos comprobados en ejecuciones documentadas | CSRF por HTTP real, escape en cada vista o entrega SMTP real |
+| phpunit-final.xml (referencia histórica o evidencia local no publicada) | Suite completa: 96 pruebas, 639 aserciones; sin fallos, errores u omisiones | Comportamiento completo del navegador o concurrencia de MySQL |
+| accessibility-final.json (referencia histórica o evidencia local no publicada) | 5 pruebas axe aprobadas en 14,1 s, con vistas públicas, gestión, perfil y estados claros/oscuros | Revisión manual completa o conformidad WCAG integral |
+| playwright-final.json (referencia histórica o evidencia local no publicada) | Suite de navegador completa: 16 aprobados, sin fallos, omisiones ni inestables | Todas las combinaciones de dispositivos, despliegue externo o ensayo concurrente MySQL |
+| browser-performance.json (referencia histórica o evidencia local no publicada) | Medición local de carga, estabilidad y rAF; Three.js bajo demanda y WebGL activado al solicitarlo | Percentiles de campo, FPS de GPU o rendimiento universal |
+| backend-review.json (referencia histórica o evidencia local no publicada) | Corrección de Host/URLs canónicas comprobada; 3 pruebas, 5 aserciones aprobadas | Suite completa del proyecto o revisión E2E final |
+| security-operational-hardening.json (referencia histórica o evidencia local no publicada) | Portada antigua accesible; archivos concretos ocultos devuelven 404 | Corrección de los fallos restantes del PHP legado |
+| legacy-host-isolation.json (referencia histórica o evidencia local no publicada) | Tres archivos privados devuelven 404 con el legado aislado por host | Corrección de la lógica vulnerable del PHP antiguo |
+| legacy-integrity-final.json (referencia histórica o evidencia local no publicada) | 34 archivos originales con hashes conservados, sin cambios | Restauración ensayada de bases de datos o verificación de derechos sobre cada recurso heredado |
 
 No se ejecutó un escaneo de CVEs de las imágenes Docker ni se fijaron por digest. `php:8.4-apache`, `mysql:8.4` y la etiqueta de Mailpit pueden resolverse a imágenes distintas en el futuro. Las auditorías de Composer/npm no sustituyen su revisión. Para repetir las auditorías de aplicación desde `modern/`, usa `docker compose exec -T app composer audit` y `npm audit`; `npm run audit:licenses` genera el inventario según el script del proyecto.
 

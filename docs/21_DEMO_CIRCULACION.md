@@ -1,13 +1,13 @@
 # Demo estática de circulación 3.0
 
-La demo conserva React, Vite, las portadas originales, los componentes visuales compartidos y la apertura CSS. No carga Three.js ni WebGL. Laravel permanece en `modern/`, con sus operaciones y autorización reales; la demo no lo ejecuta ni le envía solicitudes.
+La demo conserva React, Vite, las portadas originales y los componentes visuales compartidos. La portada permanece visible, sin control de apertura. No carga Three.js ni WebGL. Laravel permanece en `modern/`, con sus operaciones y autorización reales; la demo no lo ejecuta ni le envía solicitudes.
 
 ## Qué se puede explorar
 
 | Ruta | Experiencia |
 |---|---|
 | `/` y `/catalog` | Portada editorial, búsqueda, categorías, orden y paginación |
-| `/catalog/:id` | Ficha, apertura de portada, disponibilidad ficticia y solicitud o reserva |
+| `/catalog/:id` | Ficha, portada editorial, disponibilidad ficticia y solicitud o reserva |
 | `/my-library` | Solicitudes, préstamos, renovaciones, historial, cuenta y avisos del perfil lector seleccionado |
 | `/news` | Incorporaciones y anuncios ficticios, filtros por tema, estado y fechas |
 | `/demo/admin/circulation` | Validación, lista de espera, preparación, entrega y devolución; inventario de la muestra y reloj controlado |

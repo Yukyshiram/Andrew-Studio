@@ -14,13 +14,13 @@ La convivencia introducía un riesgo nuevo: el montaje de la raíz del repositor
 
 El integrador recreó únicamente el servicio web antiguo. La comprobación posterior exige que la portada siga disponible y que archivos concretos de los directorios enmascarados no puedan recuperarse. Esta mitigación es posterior a `security-baseline.json`; aquella evidencia conserva correctamente las respuestas anteriores, incluidas las de `/.git/HEAD`. El aislamiento operativo no corrige el resto de las vulnerabilidades del PHP legado ni lo convierte en una aplicación apta para publicar.
 
-Resultado comprobado por GET local y registrado en [security-operational-hardening.json](evidence/security-operational-hardening.json): `/` responde 200, `/modern/.env` responde 404 y `/.git/HEAD` responde 404. No se guardaron cuerpos de respuesta.
+Resultado comprobado por GET local y registrado en security-operational-hardening.json (referencia histórica o evidencia local no publicada): `/` responde 200, `/modern/.env` responde 404 y `/.git/HEAD` responde 404. No se guardaron cuerpos de respuesta.
 
 Después se separaron también los hosts: `localhost:8080` redirige con 302 a
 `127.0.0.1:8080` antes de PHP y sin establecer cookies; el destino responde 200.
 2.0 usa `localhost:8081`. Cambiar únicamente de puerto no habría aislado las
 cookies y el token XSRF respecto del frontend antiguo. El código del legado
-sigue intacto. [Comprobación final](evidence/legacy-host-isolation.json).
+sigue intacto. Comprobación final (referencia histórica o evidencia local no publicada).
 
 ## Contrato de controles para la nueva aplicación
 
@@ -66,13 +66,13 @@ Se ejecutaron estos comandos sobre el runtime Docker, con SQLite en memoria y si
 | 2 | `php artisan test --compact tests/Feature/BookSecurityTest.php`, incluidos los cinco casos nuevos de consulta/filtros/paginación | **20 aprobados, 207 aserciones**, salida 0 | 26,24 s |
 | 3 | `php artisan test --compact --filter=test_authentication_audit_records_events_without_credentials` | **1 aprobado, 13 aserciones**, salida 0 | 22,19 s |
 
-La unión de los casos comprobados contiene **48 casos distintos**: no deben sumarse los conteos de las tres ejecuciones, porque se solapan. Evidencia de comandos y resultados: [security-phpunit.json](evidence/security-phpunit.json). Después se ejecutó Pint únicamente sobre los tres archivos de esta suite: salida 0, con ajustes de alineación de PHPDoc en dos archivos. No hubo cambios de lógica posteriores a las comprobaciones.
+La unión de los casos comprobados contiene **48 casos distintos**: no deben sumarse los conteos de las tres ejecuciones, porque se solapan. Evidencia de comandos y resultados: security-phpunit.json (referencia histórica o evidencia local no publicada). Después se ejecutó Pint únicamente sobre los tres archivos de esta suite: salida 0, con ajustes de alineación de PHPDoc en dos archivos. No hubo cambios de lógica posteriores a las comprobaciones.
 
 La integración completa se ejecutó después: 96 pruebas/639 aserciones aprobadas,
 PHPStan nivel 5 sin errores y 16 pruebas Playwright aprobadas. Incluye migración,
 URLs canónicas y los controles que no demuestra PHPUnit. Evidencia:
-[JUnit final](evidence/phpunit-final.xml), [Playwright](evidence/playwright-final.json)
-y [revisión independiente del backend](evidence/backend-review.json).
+JUnit final (referencia histórica o evidencia local no publicada), Playwright (referencia histórica o evidencia local no publicada)
+y revisión independiente del backend (referencia histórica o evidencia local no publicada).
 
 La revisión identificó y corrigió dos problemas adicionales: los enlaces de
 recuperación ahora fijan el origen desde `APP_URL`, con rechazo de hosts ajenos

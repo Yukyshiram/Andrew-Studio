@@ -46,7 +46,7 @@ docker compose up -d --build
 
 `compose.override.yaml` de la raíz oculta `modern/`, `.local/`, `.git/` y `docs/` al servidor antiguo. Es necesario porque su DocumentRoot abarca la raíz del repositorio. No lo omitas usando únicamente `-f compose.yaml`. El PHP legado conserva riesgos propios y debe permanecer local; consulta la [auditoría](../docs/02_AUDITORIA_SEGURIDAD.md).
 
-La dirección del legado cambia explícitamente a `http://127.0.0.1:8080`, mientras la aplicación moderna usa `http://localhost:8081`. Cambiar solo de puerto no separa cookies: estos hosts distintos evitan compartir las cookies y XSRF con el PHP antiguo. Se verificó HTTP 302 desde `localhost:8080` hacia `http://127.0.0.1:8080/` antes de ejecutar PHP y HTTP 200 en el destino. Las [comprobaciones de archivos privados](../docs/evidence/legacy-host-isolation.json) devolvieron 404. No se modificaron las fuentes originales para introducir este aislamiento.
+La dirección del legado cambia explícitamente a `http://127.0.0.1:8080`, mientras la aplicación moderna usa `http://localhost:8081`. Cambiar solo de puerto no separa cookies: estos hosts distintos evitan compartir las cookies y XSRF con el PHP antiguo. Se verificó HTTP 302 desde `localhost:8080` hacia `http://127.0.0.1:8080/` antes de ejecutar PHP y HTTP 200 en el destino. Las comprobaciones de archivos privados (referencia histórica o evidencia local no publicada) devolvieron 404. No se modificaron las fuentes originales para introducir este aislamiento.
 
 ## Recorrido de demostración
 
@@ -97,7 +97,7 @@ El script ejecuta PHPUnit tanto en SQLite en memoria como en MySQL 8.4 aislado, 
 
 La regresión 3.0 verificó 276 pruebas PHP: SQLite, 272 aprobadas y cuatro exclusivas de MySQL omitidas, con 1.869 aserciones; MySQL, 276 aprobadas y 1.929 aserciones. Pasaron PHPStan, TypeScript, build, auditorías y los 23 recorridos Playwright nativos. Las cifras de 96 pruebas/639 aserciones y 16 recorridos corresponden al [registro histórico 2.0](../docs/08_PRUEBAS_RENDIMIENTO_Y_ACCESIBILIDAD.md). Los resultados actuales y su alcance están en el [informe 3.0](../docs/22_RESULTADOS_Y_LIMITES_3.md); no equivalen a certificación de accesibilidad ni preparación automática para producción.
 
-La [medición histórica de rendimiento](../docs/evidence/browser-performance.json) registra LCP, FCP, TTFB, CLS y cadencia rAF en Chromium, Windows y backend caliente. Incluía una escena WebGL opcional, retirada de la versión actual por petición del usuario. Se conservan las portadas editoriales, sin control ni animación de apertura. Los resultados históricos dependen de ese entorno y no certifican FPS de GPU ni rendimiento móvil. Se conservaron [13 capturas](../docs/screenshots/) de escritorio y móvil revisadas visualmente. Consulta el [informe de pruebas](../docs/08_PRUEBAS_RENDIMIENTO_Y_ACCESIBILIDAD.md) y la [comparación y operación](../docs/09_COMPARACION_Y_OPERACION.md).
+La medición histórica de rendimiento (referencia histórica o evidencia local no publicada) registra LCP, FCP, TTFB, CLS y cadencia rAF en Chromium, Windows y backend caliente. Incluía una escena WebGL opcional, retirada de la versión actual por petición del usuario. Se conservan las portadas editoriales, sin control ni animación de apertura. Los resultados históricos dependen de ese entorno y no certifican FPS de GPU ni rendimiento móvil. Los resultados de validación se conservan localmente; el repositorio incluye cuatro capturas representativas del producto. Consulta el [informe de pruebas](../docs/08_PRUEBAS_RENDIMIENTO_Y_ACCESIBILIDAD.md) y la [comparación y operación](../docs/09_COMPARACION_Y_OPERACION.md).
 
 ## Datos, respaldo y parada
 
@@ -119,7 +119,7 @@ Laravel 13/PHP 8.4, React 19 y TypeScript, Inertia 3, Tailwind CSS 4, componente
 - [Reservas/renovación](../docs/18_RESERVAS_Y_RENOVACIONES.md), [tesorería](../docs/19_TESORERIA_Y_MOVIMIENTOS.md), [novedades/paneles](../docs/20_NOVEDADES_Y_PANELES.md) y [demo sin backend](../docs/21_DEMO_CIRCULACION.md).
 
 - [Auditoría del legado](../docs/01_AUDITORIA_LEGACY.md) y [seguridad inicial](../docs/02_AUDITORIA_SEGURIDAD.md).
-- [Plan técnico](../docs/03_PLAN_TECNICO.md), [arquitectura y permisos](../docs/04_ARQUITECTURA.md), [sistema de diseño](../docs/05_SISTEMA_DISENO.md).
+- Plan técnico (referencia histórica o evidencia local no publicada), [arquitectura y permisos](../docs/04_ARQUITECTURA.md), [sistema de diseño](../docs/05_SISTEMA_DISENO.md).
 - [Migración](../docs/06_MIGRACION.md), [controles de seguridad](../docs/07_SEGURIDAD_IMPLEMENTADA.md), [pruebas y rendimiento](../docs/08_PRUEBAS_RENDIMIENTO_Y_ACCESIBILIDAD.md), [comparación y operación](../docs/09_COMPARACION_Y_OPERACION.md).
 - [Licencias y riesgos pendientes](../docs/10_LICENCIAS_Y_RIESGOS.md).
 

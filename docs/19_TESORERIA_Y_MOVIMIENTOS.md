@@ -74,7 +74,7 @@ Retirar la migración D eliminaría el libro de movimientos y sus referencias: a
 
 ## Validación y compatibilidad
 
-La [evidencia de D](evidence/v3-stage-d.json) registra 226 pruebas PHP: en SQLite hay 222 aprobadas, cuatro omisiones deliberadas y 1.474 aserciones; en MySQL se aprobaron las 226 con 1.534 aserciones. Los 22 recorridos nativos, seis de circulación/tesorería en tres motores y tres financieros repetidos después del control de moneda verifican importes, encadenamiento de formularios, rechazo de sobrepagos, consulta privada, XSS, pagos, reversión, historial, foco y accesibilidad automatizada. Las capturas sintéticas están en `docs/screenshots/v3/finance/`.
+La evidencia de D (referencia histórica o evidencia local no publicada) registra 226 pruebas PHP: en SQLite hay 222 aprobadas, cuatro omisiones deliberadas y 1.474 aserciones; en MySQL se aprobaron las 226 con 1.534 aserciones. Los 22 recorridos nativos, seis de circulación/tesorería en tres motores y tres financieros repetidos después del control de moneda verifican importes, encadenamiento de formularios, rechazo de sobrepagos, consulta privada, XSS, pagos, reversión, historial, foco y accesibilidad automatizada. Las capturas sintéticas están en `docs/screenshots/v3/finance/`.
 
 Las pruebas detectaron dos particularidades corregidas en la interfaz: Inertia 3 actualiza los valores predeterminados después de guardar, por lo que una operación nueva ahora establece explícitamente sus valores iniciales; WebKit no siempre enfoca un botón al pulsarlo, por lo que el diálogo admite una referencia explícita de retorno y alternativa si el control desaparece o se desactiva.
 

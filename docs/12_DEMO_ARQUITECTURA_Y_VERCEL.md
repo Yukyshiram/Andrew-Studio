@@ -18,9 +18,9 @@ La raíz npm compila `demo/vite.config.ts` y escribe `dist/`. No ejecuta Compose
 
 ## Movimiento y accesibilidad
 
-Tokens en `modern/resources/css/motion.css`: 140 ms en controles, 240 ms en entradas y 420 ms en transiciones/cubierta; curva `(0.22,1,0.36,1)`. Apertura inicial decorativa de 750 ms en escritorio y 420 ms en móvil, interrumpible por el botón y sin bloquear navegación ni metadatos. No se fabrican páginas de lectura.
+Tokens en `modern/resources/css/motion.css`: 140 ms en controles, 240 ms en entradas y 420 ms en transiciones; curva `(0.22,1,0.36,1)`. La portada permanece visible sin botón ni animación de apertura. No se fabrican páginas de lectura.
 
-`LazyMotion` con `domAnimation` mueve tarjetas e indicador de navegación; no incluye funciones de arrastre innecesarias. React Router usa View Transitions para compartir `cover-{id}` entre tarjeta y cubierta. Sin API, navega inmediatamente con entrada CSS. `MotionConfig reducedMotion="user"` y CSS eliminan desplazamiento/perspectiva y representan la cubierta abierta mediante opacidad.
+`LazyMotion` con `domMax` habilita las transiciones de posición de las tarjetas. React Router usa View Transitions para compartir `cover-{id}` entre tarjeta y cubierta. Sin API, navega inmediatamente con entrada CSS. `MotionConfig reducedMotion="user"`, la desactivación explícita de layout y CSS respetan la preferencia de movimiento reducido.
 
 La URL conserva búsqueda/categoría/orden/página. La restauración registra scroll antes del cambio de DOM y el enlace seleccionado; restaura foco y posición sin scroll suave. Tabs con flechas/Home/End y roles ARIA; diálogos Radix con foco restaurado, incluido WebKit al abrir desde botones de tabla.
 

@@ -44,7 +44,7 @@ Se conservan verde oscuro, negro, ámbar, tipografía editorial y portadas propi
 demo/                         React + TypeScript + Vite, con estado ficticio
 modern/                       Laravel 13 / PHP 8.4 / React 19 / Inertia 3 / MySQL 8.4
 modern/resources/js/components/ Portadas, controles, noticias y presentación compartidos
-docs/                         Dominio, guías, auditorías, evidencia y capturas
+docs/                         Dominio, guías, auditorías y cuatro capturas representativas
 ```
 
 ## Aplicación con servidor
@@ -79,16 +79,16 @@ Para Laravel:
 ./modern/scripts/test.ps1 -KeepTestServer
 ```
 
-Incluye SQLite en memoria, MySQL de pruebas separado, PHPStan, TypeScript, build, auditorías y Playwright. El script detiene el MySQL efímero sin eliminar los volúmenes existentes; sus pruebas no se dirigen a la base principal. [Resultados, cobertura y límites](docs/22_RESULTADOS_Y_LIMITES_3.md). [Registro por etapas](docs/17_IMPLEMENTACION_3.md).
+Incluye SQLite en memoria, MySQL de pruebas separado, PHPStan, TypeScript, build, auditorías y Playwright. El script detiene el MySQL efímero sin eliminar los volúmenes existentes; sus pruebas no se dirigen a la base principal. [Resultados, cobertura y límites](docs/22_RESULTADOS_Y_LIMITES_3.md). [Registro por etapas](docs/17_IMPLEMENTACION_3.md). [Limpieza y trazabilidad de publicación](docs/25_PUBLICACION_LIMPIA.md).
 
 ## Vercel e historia
 
 Vercel debe compilar **desde la raíz** con `npm ci`, build `npm run build` y salida `dist`. `vercel.json` conserva el fallback SPA y las cabeceras de seguridad. El artefacto contiene exclusivamente la demo; Laravel no se publica como sitio estático. La URL pública se añadirá tras un despliegue autorizado y verificado. [Preparación del PR y publicación](docs/24_PREPARACION_PUBLICACION_3.md).
 
-El trabajo 3.0 está en `codex/bibliotecary-3`. La base 2.6 se conserva en `codex/ux-role-clarity-2.6` (`827be7c`); la recuperación 2.0, en `codex/bibliotecary-2`. `archive/legacy-v1` y `v1-legacy-final` conservan el legado desde `372dbf3`. No se reescribe el historial ni se mueven esas referencias. La documentación de portada se actualiza; el código ejecutable original permanece recuperable e intacto.
+La rama de publicación es `codex/publicacion-bibliotecary-3`. El desarrollo completo y sus artefactos se conservan localmente en `codex/bibliotecary-3`.  La base 2.6 se conserva en `codex/ux-role-clarity-2.6` (`827be7c`); la recuperación 2.0, en `codex/bibliotecary-2`. `archive/legacy-v1` y `v1-legacy-final` conservan el legado desde `372dbf3`. No se reescribe el historial ni se mueven esas referencias. La documentación de portada se actualiza; el código ejecutable original permanece recuperable e intacto.
 
-El PHP antiguo no pertenece al artefacto de Vercel. Una publicación futura de Laravel debe utilizar `modern/public/` como document root. No se debe servir la raíz del repositorio como aplicación PHP.
+El PHP antiguo está fuera de la estructura activa de esta rama y del artefacto de Vercel. Sigue recuperable en el commit histórico de `main` y las referencias locales conservadas. Una publicación futura de Laravel debe utilizar `modern/public/` como document root. No se debe servir la raíz del repositorio como aplicación PHP.
 
 ## Licencia
 
-[GPL-3.0-only](LICENSE). Los avisos de 44 dependencias de ejecución se distribuyen en `/licenses/THIRD_PARTY_NOTICES.txt`; se mantienen sus licencias originales. [Inventario](docs/evidence/demo-licenses.json).
+[GPL-3.0-only](LICENSE). Los avisos de 44 dependencias de ejecución se distribuyen en `/licenses/THIRD_PARTY_NOTICES.txt`; se mantienen sus licencias originales. Los inventarios se pueden regenerar con los scripts de licencias; se conservan como artefactos locales.

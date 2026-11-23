@@ -6,7 +6,7 @@ Fecha de revisión: 20 de noviembre de 2026. La comparación toma como origen el
 
 | Área | Legado restaurado | 2.0 / ruta principal | Evidencia y límite |
 | --- | --- | --- | --- |
-| Portada y consulta | PHP con tablas completas; CSS de ancho fijo | `/`, `/catalog`, `/catalog/{id}`; fichas, tarjetas/tabla y estados vacíos | [Sistema visual](05_SISTEMA_DISENO.md), [E2E](evidence/playwright-final.json) y capturas desktop/móvil; no cubre todos los dispositivos |
+| Portada y consulta | PHP con tablas completas; CSS de ancho fijo | `/`, `/catalog`, `/catalog/{id}`; fichas, tarjetas/tabla y estados vacíos | [Sistema visual](05_SISTEMA_DISENO.md), E2E (referencia histórica o evidencia local no publicada) y capturas desktop/móvil; no cubre todos los dispositivos |
 | Búsqueda | Título, coincidencia parcial, sin paginación | `/catalog`: título/autor/editorial, categoría/autor, orden permitido, 12 resultados por página | `modern/app/Services/CatalogService.php`; `BookSecurityTest`; usa `LIKE`, sin ensayo de gran volumen |
 | Registro y sesión | Registro sin contrato de validación; menús administrativos públicos | `/register`, `/login`, logout por POST; lector por defecto, rate limit y sesión regenerada | `AuthSecurityTest`; [regresiones](07_SEGURIDAD_IMPLEMENTADA.md); TLS de producción pendiente |
 | Permisos | Nombres de directorio sin autorización efectiva | Policies del servidor para lector, bibliotecario y administrador | `BookSecurityTest`, `UserAuthorizationTest`; ocultar botones no es el control |
@@ -15,8 +15,8 @@ Fecha de revisión: 20 de noviembre de 2026. La comparación toma como origen el
 | Eliminación individual | `DELETE` irreversible por ID | Archivar mediante `DELETE /manage/books/{id}` y restaurar desde papelera | `BookSecurityTest`; soft delete de negocio, distinto del rollback de migración |
 | Eliminación de catálogo | Borrado físico sin permiso/confirmación | `POST /manage/books/archive-all`: admin, contraseña actual y `ARCHIVAR CATÁLOGO` | `BookSecurityTest`; conserva los registros para restauración |
 | Cuentas | Registro público y sin roles reales | `/manage/users`: admin crea cuentas, cambia rol y desactiva lógicamente | `UserAuthorizationTest`; no hay restauración de cuentas desde interfaz |
-| Recuperación y perfil | Sin recuperación de contraseña | `/forgot-password`, `/reset-password/{token}`, `/profile`; broker Laravel y SMTP Mailpit | Backend y [recorrido E2E](evidence/playwright-final.json) con SMTP local, token de un uso y sesión revocada; sin proveedor externo |
-| Diagnóstico y secretos | `info.php` público y raíz del repositorio publicada | Docroot moderno `public/`; sin endpoint phpinfo; máscaras para la convivencia antigua | [Hardening operativo](evidence/security-operational-hardening.json); `info.php` del legado sigue siendo un riesgo |
+| Recuperación y perfil | Sin recuperación de contraseña | `/forgot-password`, `/reset-password/{token}`, `/profile`; broker Laravel y SMTP Mailpit | Backend y recorrido E2E (referencia histórica o evidencia local no publicada) con SMTP local, token de un uso y sesión revocada; sin proveedor externo |
+| Diagnóstico y secretos | `info.php` público y raíz del repositorio publicada | Docroot moderno `public/`; sin endpoint phpinfo; máscaras para la convivencia antigua | Hardening operativo (referencia histórica o evidencia local no publicada); `info.php` del legado sigue siendo un riesgo |
 | Historial | Sin registro de acciones | `/manage/audit`, reservado a admin; eventos sin credenciales | `AuthSecurityTest` y modelo `AuditEvent`; no equivale a monitorización operativa |
 | Datos históricos | Sin migraciones ni reversión por lote | Exportador de lectura, importación atómica, lote SHA-256 y rollback con fingerprints | [Migración](06_MIGRACION.md); no se exportaron datos reales durante el trabajo |
 | Dependencias | Sin Composer/npm ni suite de proyecto | Lockfiles, scripts, PHPUnit, PHPStan, Playwright y axe | [Inventarios y riesgos](10_LICENCIAS_Y_RIESGOS.md); la existencia de herramientas no acredita su ejecución |
@@ -36,11 +36,11 @@ Mailpit expone su interfaz en 8026; el SMTP es interno entre contenedores. Ningu
 
 `app` y `app-e2e` comparten únicamente el volumen de dependencias `modern_vendor`, además del código montado de `modern/`; mantienen sus bases y cookies separadas. Composer se ejecuta desde Docker y escribe en ese volumen. El `vendor/` del host no determina lo que carga el runtime. El entrypoint crea los directorios de ejecución y prepara los permisos de `www-data` sobre `storage/` y `bootstrap/cache/` de la aplicación nueva en cada arranque.
 
-El Compose de la raíz carga automáticamente el nuevo `compose.override.yaml`. Este añade máscaras temporales para directorios nuevos y Git, y usa un contexto de build mínimo sin copiar todo el repositorio. Se conservaron las fuentes originales; no debe omitirse el override al arrancar el legado. En la primera fase de aislamiento, la portada antigua siguió respondiendo 200 y `/modern/.env` y `/.git/HEAD` devolvieron 404: [evidencia HTTP](evidence/security-operational-hardening.json).
+El Compose de la raíz carga automáticamente el nuevo `compose.override.yaml`. Este añade máscaras temporales para directorios nuevos y Git, y usa un contexto de build mínimo sin copiar todo el repositorio. Se conservaron las fuentes originales; no debe omitirse el override al arrancar el legado. En la primera fase de aislamiento, la portada antigua siguió respondiendo 200 y `/modern/.env` y `/.git/HEAD` devolvieron 404: evidencia HTTP (referencia histórica o evidencia local no publicada).
 
-La segunda fase cambia la URL del legado a `http://127.0.0.1:8080`. El moderno continúa en `http://localhost:8081`: separar solo puertos no separa cookies, por lo que se utilizan hosts diferentes. `modern/docker/legacy/isolation.conf` añade una redirección 302 desde `localhost:8080` antes de ejecutar PHP y rechaza hosts ajenos. El Dockerfile del contexto mínimo copia únicamente esa configuración y habilita rewrite; no copia código ni secretos. Las máscaras siguen vigentes. Se verificaron HTTP 302 con `Location: http://127.0.0.1:8080/` y HTTP 200 en el destino. Las tres [comprobaciones de archivos privados](evidence/legacy-host-isolation.json) devolvieron 404 para `/modern/.env`, `/.git/HEAD` y el snapshot de `.local/backups/`.
+La segunda fase cambia la URL del legado a `http://127.0.0.1:8080`. El moderno continúa en `http://localhost:8081`: separar solo puertos no separa cookies, por lo que se utilizan hosts diferentes. `modern/docker/legacy/isolation.conf` añade una redirección 302 desde `localhost:8080` antes de ejecutar PHP y rechaza hosts ajenos. El Dockerfile del contexto mínimo copia únicamente esa configuración y habilita rewrite; no copia código ni secretos. Las máscaras siguen vigentes. Se verificaron HTTP 302 con `Location: http://127.0.0.1:8080/` y HTTP 200 en el destino. Las tres comprobaciones de archivos privados (referencia histórica o evidencia local no publicada) devolvieron 404 para `/modern/.env`, `/.git/HEAD` y el snapshot de `.local/backups/`.
 
-La [verificación final de integridad](evidence/legacy-integrity-final.json) compara los 34 archivos originales inventariados: todos conservan su hash y no registra cambios. Incluye el README y la licencia originales; la licencia en `modern/` conserva también el mismo SHA-256 que la raíz.
+La verificación final de integridad (referencia histórica o evidencia local no publicada) compara los 34 archivos originales inventariados: todos conservan su hash y no registra cambios. Incluye el README y la licencia originales; la licencia en `modern/` conserva también el mismo SHA-256 que la raíz.
 
 ## Operación cotidiana
 
@@ -58,7 +58,7 @@ La reejecución exacta de `install.ps1 -Demo` terminó con salida 0 sobre el ent
 
 ## Respaldo de la base nueva
 
-La copia inicial del legado está en `.local/backups/legacy-before-modernization.zip`, junto con el parche de restauración. Los hashes iniciales constan en [legacy-integrity.json](evidence/legacy-integrity.json). Ese snapshot conserva las fuentes recibidas; no sustituye un respaldo actualizado de MySQL.
+La copia inicial del legado está en `.local/backups/legacy-before-modernization.zip`, junto con el parche de restauración. Los hashes iniciales constan en legacy-integrity.json (referencia histórica o evidencia local no publicada). Ese snapshot conserva las fuentes recibidas; no sustituye un respaldo actualizado de MySQL.
 
 El siguiente ejemplo crea un dump de 2.0, sin imprimir la contraseña y sin pasar SQL por la recodificación de la salida de PowerShell. Ejecútalo desde `modern/`, con Docker iniciado:
 
@@ -88,13 +88,13 @@ No se ha ensayado una restauración de producción. Antes de depender de un resp
 
 ## Estado verificable de calidad
 
-La suite completa de [PHPUnit](evidence/phpunit-final.xml) registra **96 pruebas, 639 aserciones, sin fallos, errores ni casos omitidos**. Incluye las regresiones backend y migración; no debe sumarse a las ejecuciones parciales anteriores de [seguridad](evidence/security-phpunit.json). La [auditoría npm final](evidence/npm-audit-final.json) informa 0 vulnerabilidades y 140 dependencias; la [auditoría Composer](evidence/composer-audit.json), ningún advisory ni paquete abandonado. Son resultados locales y puntuales.
+La suite completa de PHPUnit (referencia histórica o evidencia local no publicada) registra **96 pruebas, 639 aserciones, sin fallos, errores ni casos omitidos**. Incluye las regresiones backend y migración; no debe sumarse a las ejecuciones parciales anteriores de seguridad (referencia histórica o evidencia local no publicada). La auditoría npm final (referencia histórica o evidencia local no publicada) informa 0 vulnerabilidades y 140 dependencias; la auditoría Composer (referencia histórica o evidencia local no publicada), ningún advisory ni paquete abandonado. Son resultados locales y puntuales.
 
-La [revisión independiente del backend](evidence/backend-review.json) registró y volvió a comprobar la corrección del dominio canónico de recuperación: 3 pruebas y 5 aserciones aprobadas. Un Host ajeno devuelve 400 en producción y los enlaces se generan desde `APP_URL`; la restricción de Host de Laravel se omite en local y en pruebas unitarias. Esta comprobación fue sintética, sin enviar correo ni modificar bases reales.
+La revisión independiente del backend (referencia histórica o evidencia local no publicada) registró y volvió a comprobar la corrección del dominio canónico de recuperación: 3 pruebas y 5 aserciones aprobadas. Un Host ajeno devuelve 400 en producción y los enlaces se generan desde `APP_URL`; la restricción de Host de Laravel se omite en local y en pruebas unitarias. Esta comprobación fue sintética, sin enviar correo ni modificar bases reales.
 
-PHPStan en nivel 5, TypeScript y build aprobaron la integración. La [suite completa Playwright](evidence/playwright-final.json) registra **16 casos aprobados, sin fallos, omisiones ni casos inestables**. Incluye autenticación/roles, CRUD, XSS tratado como texto, CSRF por HTTP real, cookies/cabeceras/archivos privados, recuperación SMTP local y token de un uso, revocación de sesión anterior, móvil, movimiento reducido y accesibilidad automatizada. Los cinco casos de axe de la ejecución completa no deben sumarse de nuevo al informe focalizado siguiente. El [informe final de QA](08_PRUEBAS_RENDIMIENTO_Y_ACCESIBILIDAD.md) reúne los resultados y duraciones de la última ejecución.
+PHPStan en nivel 5, TypeScript y build aprobaron la integración. La suite completa Playwright (referencia histórica o evidencia local no publicada) registra **16 casos aprobados, sin fallos, omisiones ni casos inestables**. Incluye autenticación/roles, CRUD, XSS tratado como texto, CSRF por HTTP real, cookies/cabeceras/archivos privados, recuperación SMTP local y token de un uso, revocación de sesión anterior, móvil, movimiento reducido y accesibilidad automatizada. Los cinco casos de axe de la ejecución completa no deben sumarse de nuevo al informe focalizado siguiente. El [informe final de QA](08_PRUEBAS_RENDIMIENTO_Y_ACCESIBILIDAD.md) reúne los resultados y duraciones de la última ejecución.
 
-El [informe final de accesibilidad automatizada](evidence/accessibility-final.json) registra **5 pruebas aprobadas, sin fallos ni omisiones, en 14,1 s**. Comprende portada, catálogo, login y registro, además de seis vistas de gestión/perfil en tema oscuro y perfil/portada en tema claro. La ausencia de violaciones detectadas por axe en esos estados no acredita conformidad WCAG integral; falta la revisión manual completa.
+El informe final de accesibilidad automatizada (referencia histórica o evidencia local no publicada) registra **5 pruebas aprobadas, sin fallos ni omisiones, en 14,1 s**. Comprende portada, catálogo, login y registro, además de seis vistas de gestión/perfil en tema oscuro y perfil/portada en tema claro. La ausencia de violaciones detectadas por axe en esos estados no acredita conformidad WCAG integral; falta la revisión manual completa.
 
 ### Capturas revisadas
 
@@ -102,16 +102,16 @@ Se conservaron y revisaron visualmente 13 capturas: legado, portada, catálogo, 
 
 | Vista | Evidencia |
 | --- | --- |
-| Legado | [00-legado.png](screenshots/00-legado.png) |
-| Portada y catálogo modernos | [01-portada.png](screenshots/01-portada.png), [02-catalogo.png](screenshots/02-catalogo.png) |
-| Ficha y acceso | [03-ficha.png](screenshots/03-ficha.png), [04-acceso.png](screenshots/04-acceso.png) |
-| Panel y gestión | [05-panel.png](screenshots/05-panel.png), [06-gestion.png](screenshots/06-gestion.png), [07-formulario.png](screenshots/07-formulario.png) |
-| Personas, historial y perfil | [08-personas.png](screenshots/08-personas.png), [09-historial.png](screenshots/09-historial.png), [10-perfil.png](screenshots/10-perfil.png) |
-| Móvil | [11-portada-movil.png](screenshots/11-portada-movil.png), [12-catalogo-movil.png](screenshots/12-catalogo-movil.png) |
+| Legado | 00-legado.png (referencia histórica o evidencia local no publicada) |
+| Portada y catálogo modernos | 01-portada.png (referencia histórica o evidencia local no publicada), 02-catalogo.png (referencia histórica o evidencia local no publicada) |
+| Ficha y acceso | 03-ficha.png (referencia histórica o evidencia local no publicada), 04-acceso.png (referencia histórica o evidencia local no publicada) |
+| Panel y gestión | 05-panel.png (referencia histórica o evidencia local no publicada), 06-gestion.png (referencia histórica o evidencia local no publicada), 07-formulario.png (referencia histórica o evidencia local no publicada) |
+| Personas, historial y perfil | 08-personas.png (referencia histórica o evidencia local no publicada), 09-historial.png (referencia histórica o evidencia local no publicada), 10-perfil.png (referencia histórica o evidencia local no publicada) |
+| Móvil | 11-portada-movil.png (referencia histórica o evidencia local no publicada), 12-catalogo-movil.png (referencia histórica o evidencia local no publicada) |
 
 ### Medición local de rendimiento
 
-La [evidencia de navegador](evidence/browser-performance.json) corresponde a una ejecución Chromium headless 159.0.8154.6 sobre Windows, Ryzen 7 5700G, viewport 1440×1000, DPR 1, sin throttling, red loopback y backend caliente. No es una prueba en un móvil físico ni un percentil de usuarios reales.
+La evidencia de navegador (referencia histórica o evidencia local no publicada) corresponde a una ejecución Chromium headless 159.0.8154.6 sobre Windows, Ryzen 7 5700G, viewport 1440×1000, DPR 1, sin throttling, red loopback y backend caliente. No es una prueba en un móvil físico ni un percentil de usuarios reales.
 
 Las cifras de LCP, FCP, TTFB, CLS, tareas largas, transferencia inicial e intervalos rAF se mantienen en el [informe final de rendimiento](08_PRUEBAS_RENDIMIENTO_Y_ACCESIBILIDAD.md) y su JSON enlazado. La escena de Three.js no se carga inicialmente y WebGL se activa al solicitarla.
 

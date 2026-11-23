@@ -1,5 +1,7 @@
 # Arquitectura de Andrew's Bibliotecary 2.0
 
+> Documento histórico de la base 2.0. La ampliación vigente de ejemplares, socios, circulación y finanzas se describe en [dominio 3.0](16_DOMINIO_BIBLIOTECARIO_3.md).
+
 ## Decisiones
 
 Monolito modular Laravel 13/PHP 8.4: rutas y middleware, Form Requests, políticas,
@@ -124,7 +126,7 @@ hostname exacto configurado, sin subdominios automáticos, en producción; Larav
 omite esa restricción en entorno local y unit tests. La raíz canónica sigue
 protegiendo los enlaces locales. El cambio de contraseña usa `regenerate(true)`
 y revoca las otras sesiones persistidas. La revisión independiente y las tres
-regresiones de URLs están en [backend-review.json](evidence/backend-review.json);
+regresiones de URLs están en backend-review.json (referencia histórica o evidencia local no publicada);
 el recorrido completo de navegador se valida por separado.
 
 Para la convivencia, el Compose raíz añade máscaras sobre los directorios nuevos
@@ -134,11 +136,11 @@ el legado `127.0.0.1:8080`. La identidad de host separada evita compartir cookie
 con el PHP antiguo; la configuración Apache nueva redirige las solicitudes a
 `localhost:8080` antes de PHP y rechaza otros hosts. Se verificaron HTTP 302 hacia
 `http://127.0.0.1:8080/`, HTTP 200 en ese destino y 404 para los tres archivos
-privados comprobados en [legacy-host-isolation.json](evidence/legacy-host-isolation.json).
+privados comprobados en legacy-host-isolation.json (referencia histórica o evidencia local no publicada).
 La búsqueda usa `LIKE` parametrizado con comodines escapados y paginación; no se ha incorporado
 un índice full text ni demostrado un volumen de 50.000 registros.
 
-La [medición local](evidence/browser-performance.json) registra los tiempos de
+La medición local (referencia histórica o evidencia local no publicada) registra los tiempos de
 carga, ausencia de carga inicial de Three.js y WebGL activo tras el opt-in. El
 [informe final](08_PRUEBAS_RENDIMIENTO_Y_ACCESIBILIDAD.md) recoge las cifras y el
 entorno; la cadencia rAF no certifica FPS de GPU ni rendimiento universal.

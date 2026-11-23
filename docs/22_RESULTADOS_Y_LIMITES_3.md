@@ -1,8 +1,10 @@
 # Resultados, cobertura y límites de Andrew's Bibliotecary 3.0
 
+> Informe de validación local previo a la limpieza de publicación. Las evidencias completas y capturas masivas se conservan en el workspace y ZIP local, fuera de GitHub. Las referencias a commits corresponden a la rama de desarrollo local. La publicación, pruebas finales y correspondencias se registran en [publicación limpia](25_PUBLICACION_LIMPIA.md). La interacción «Abrir portada» fue retirada después de esta medición por petición del usuario.
+
 La implementación local A–F está comprobada. Laravel incorpora circulación persistente; la demo completa el recorrido con datos ficticios y sin backend. Este informe no declara un despliegue público ni aprobación de producción.
 
-La evidencia consolidada es [v3-stage-f.json](evidence/v3-stage-f.json), sobre el código `5439879`. Los commits posteriores de documentación no modifican ese comportamiento. Las etapas anteriores tienen sus propios informes A–E; sus cifras históricas no sustituyen esta ejecución final.
+La evidencia consolidada es v3-stage-f.json (referencia histórica o evidencia local no publicada), sobre el código `5439879`. Los commits posteriores de documentación no modifican ese comportamiento. Las etapas anteriores tienen sus propios informes A–E; sus cifras históricas no sustituyen esta ejecución final.
 
 ## Controles ejecutados
 
@@ -29,7 +31,7 @@ Las cuatro omisiones de navegador corresponden a las capturas generales y medici
 
 La comprobación final solicitada de retirada de la vista 3D volvió a pasar en Chromium, Firefox y WebKit sobre el servidor de desarrollo: sin botón «Vista 3D» ni canvas, con navegación y apertura CSS operativas. No se incorporaron Three.js ni WebGL.
 
-La suite nativa completa volvió a ejecutarse con `modern/scripts/test.ps1 -KeepTestServer`, incluyendo el MySQL separado y su detención en `finally`. Las matrices nativas adicionales de circulación, finanzas e incorporaciones en tres motores están registradas en [E](evidence/v3-stage-e.json) y [D](19_TESORERIA_Y_MOVIMIENTOS.md). F no modificó lógica PHP ni componentes visuales del servidor: añadió la demo y reforzó instalación/QA. Pint pertenece a las puertas PHP anteriores; no se afirma una nueva ejecución de Pint sobre cambios exclusivamente TS/PowerShell/documentales.
+La suite nativa completa volvió a ejecutarse con `modern/scripts/test.ps1 -KeepTestServer`, incluyendo el MySQL separado y su detención en `finally`. Las matrices nativas adicionales de circulación, finanzas e incorporaciones en tres motores están registradas en E (referencia histórica o evidencia local no publicada) y [D](19_TESORERIA_Y_MOVIMIENTOS.md). F no modificó lógica PHP ni componentes visuales del servidor: añadió la demo y reforzó instalación/QA. Pint pertenece a las puertas PHP anteriores; no se afirma una nueva ejecución de Pint sobre cambios exclusivamente TS/PowerShell/documentales.
 
 ## Cobertura funcional y comparación
 
@@ -95,7 +97,7 @@ La transferencia total aumenta **25.316 B, aproximadamente 10 %**; JS aumenta 24
 
 **El LCP menor no demuestra una mejora causada por el código.** La referencia tenía aproximadamente 840–1.133 MiB libres; la medición final, 5.632–5.732 MiB. La carga de otros procesos y condiciones de laboratorio varían. No son percentiles de campo, prueba de CDN/Vercel o un móvil físico. La observación no demuestra ausencia universal de regresiones de Core Web Vitals.
 
-[Datos antes](evidence/v3-demo-before-circulation-performance.json), [estado intermedio antes de activar layout](evidence/v3-demo-circulation-before-layout-performance.json) y [datos finales](evidence/v3-demo-after-circulation-performance.json). Las muestras contienen tareas largas y duraciones CDP; estas incluyen automatización. **No se midieron FPS físicos ni se afirma 60 FPS verificados.** El muestreo de matrices con rAF solo comprueba que la tarjeta cambia de posición mediante transform y que lo omite con movimiento reducido.
+Datos antes (referencia histórica o evidencia local no publicada), estado intermedio antes de activar layout (referencia histórica o evidencia local no publicada) y datos finales (referencia histórica o evidencia local no publicada). Las muestras contienen tareas largas y duraciones CDP; estas incluyen automatización. **No se midieron FPS físicos ni se afirma 60 FPS verificados.** El muestreo de matrices con rAF solo comprueba que la tarjeta cambia de posición mediante transform y que lo omite con movimiento reducido.
 
 ## Instalación, recuperación y conservación
 
@@ -103,20 +105,20 @@ La copia independiente de demo instaló dependencias desde cero, sin dependencia
 
 Laravel se instaló con `install.ps1 -Demo` en otro proyecto Compose, con nuevas credenciales, volúmenes y puertos locales. La muestra resultante tuvo 25 fichas, seis cuentas, cuatro socios, seis ejemplares, tres préstamos y seis incorporaciones. Repetir la instalación conservó el entorno y la firma de todas las filas. Se restauró un dump sintético en una segunda base; coincidieron cantidades y firma. El fixture se detuvo sin eliminar volúmenes. Se usó el mismo Windows/Docker: no se certifica una máquina nueva ni se restauró el respaldo real.
 
-La actualización de la base conservada se había aplicado con respaldo privado y comparación de las cuatro tablas históricas, sin seeding: [E](evidence/v3-stage-e.json). El [procedimiento de migración](06_MIGRACION.md) distingue importación, cambio de esquema y recuperación; volver al código anterior no revierte automáticamente datos nuevos.
+La actualización de la base conservada se había aplicado con respaldo privado y comparación de las cuatro tablas históricas, sin seeding: E (referencia histórica o evidencia local no publicada). El [procedimiento de migración](06_MIGRACION.md) distingue importación, cambio de esquema y recuperación; volver al código anterior no revierte automáticamente datos nuevos.
 
-[Conservación final](evidence/v3-preservation-final.json): el respaldo inicial privado sigue con 34 entradas recuperables; 32 archivos de código/recursos coinciden byte por byte. `.gitignore` y `README.md` ya eran diferencias documentales anteriores a 3.0; en esta misión solo se actualizó el contenido del README de portada respecto a 2.6. Su versión anterior permanece en la rama protegida. La comparación con blobs Git contempla LF/CRLF sin reescribir originales. No se publican ese ZIP original, respaldos SQL ni configuraciones privadas.
+Conservación final (referencia histórica o evidencia local no publicada): el respaldo inicial privado sigue con 34 entradas recuperables; 32 archivos de código/recursos coinciden byte por byte. `.gitignore` y `README.md` ya eran diferencias documentales anteriores a 3.0; en esta misión solo se actualizó el contenido del README de portada respecto a 2.6. Su versión anterior permanece en la rama protegida. La comparación con blobs Git contempla LF/CRLF sin reescribir originales. No se publican ese ZIP original, respaldos SQL ni configuraciones privadas.
 
 Licencia y referencias históricas permanecen intactas. La consulta remota final de `main` seguía en `372dbf3`; no se hizo push, merge, force push ni despliegue. Los scripts, reglas y dependencias se mantuvieron dentro del workspace; no se modificaron políticas o configuraciones globales de herramientas.
 
 ## Capturas y trazabilidad
 
-Se generaron **72 capturas de demo**: [presentación de escritorio/tablet/móvil](screenshots/v3/demo/presentation/), y recorridos/temas en [Chromium](screenshots/v3/demo/chromium/), [Firefox](screenshots/v3/demo/firefox/) y [WebKit](screenshots/v3/demo/webkit/). Incluyen préstamo renovado, devolución/historial, solicitud cancelada, circulación, tesorería, novedades y temas móviles. Se revisaron visualmente capturas representativas; esto no significa inspección manual individual de cada píxel de las 72.
+Se generaron **72 capturas de demo**: [presentación de escritorio/tablet/móvil](screenshots/v3/demo/presentation/), y recorridos/temas en [Chromium](screenshots/v3/demo/chromium/), Firefox (referencia histórica o evidencia local no publicada) y WebKit (referencia histórica o evidencia local no publicada). Incluyen préstamo renovado, devolución/historial, solicitud cancelada, circulación, tesorería, novedades y temas móviles. Se revisaron visualmente capturas representativas; esto no significa inspección manual individual de cada píxel de las 72.
 
 Las pantallas reales de incorporaciones y paneles permanecen en [capturas E](screenshots/v3/acquisitions/); las etapas anteriores mantienen su evidencia de inventario, políticas, socios, circulación y finanzas. Los artefactos de repetición nativa, trazas y datos privados se guardaron fuera de los entregables públicos.
 
 Durante la validación se corrigieron el retorno de foco del menú móvil y la ausencia efectiva de animación de layout. El soporte básico de Motion no la registraba; ahora se comprueba el movimiento de la misma tarjeta y su supresión explícita con reduced-motion. Se ajustó el ensayo de contraste para usar el control real de tema y esperar transiciones finitas, conservando todos los criterios Axe. La suite final no usa retries ni exclusiones de accesibilidad.
 
-[Lista de commits locales desde 2.6](evidence/v3-commits.txt). Las unidades de F separan motor, interfaz, QA MySQL, instalación, movimiento y auditoría de tema; el registro A–E está en [implementación](17_IMPLEMENTACION_3.md). El commit documental que contiene este informe añade las evidencias y guías sin alterar la lógica comprobada.
+Lista de commits locales desde 2.6 (referencia histórica o evidencia local no publicada). Las unidades de F separan motor, interfaz, QA MySQL, instalación, movimiento y auditoría de tema; el registro A–E está en [implementación](17_IMPLEMENTACION_3.md). El commit documental que contiene este informe añade las evidencias y guías sin alterar la lógica comprobada.
 
 La publicación y el PR remoto quedan sujetos a la autorización del usuario: [borrador y procedimiento](24_PREPARACION_PUBLICACION_3.md). La conexión Vercel respondió a lecturas, pero no identificó este proyecto por los nombres consultados; no se creó ni enlazó uno ni se inició sesión de nuevo.
