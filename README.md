@@ -177,7 +177,7 @@ La suite utiliza bases sintéticas aisladas y un servidor E2E separado. Los resu
 
 ## Despliegue en Vercel
 
-**Estado verificado: demo estática publicada en producción** en [andrews-bibliotecary.vercel.app](https://andrews-bibliotecary.vercel.app), desde `main` (`f781091`). El backend Laravel no está desplegado públicamente.
+**Estado verificado: demo estática publicada en producción** en [andrews-bibliotecary.vercel.app](https://andrews-bibliotecary.vercel.app), desde la rama `main`. El backend Laravel no está desplegado públicamente.
 
 | Opción | Configuración |
 |---|---|
@@ -206,12 +206,12 @@ Las nuevas ramas parten de `main` actualizado y utilizan `feature/`, `fix/`, `re
 [GPL-3.0-only](LICENSE). Las dependencias conservan sus licencias originales. Los avisos de las 44 dependencias de ejecución de la demo se incluyen en [THIRD_PARTY_NOTICES.txt](demo/public/licenses/THIRD_PARTY_NOTICES.txt) y se distribuyen también con el sitio estático.
 
 <div id="header" align="center">
-    <img src="https://github.com/Yukyshiram/Recursos_Narwhal_Project/blob/main/Im_JVallejo.jpeg?raw=true" width="200" style="border-radius: 50%;"/>
+    <img src="https://github.com/Yukyshiram/Recursos_Narwhal_Project/blob/main/Im_JVallejo.jpeg?raw=true" width="200" style="border-radius: 50%;" alt="Jesús Vallejo"/>
     <h1 align="center">Hola, soy Jesús Vallejo! 👋</h1>
     <h3 align="center">🚀 Full Stack Developer | 🎨 UI/UX Designer | 🧠 Project Manager </h3>
 
-    Las malas ideas siempre son las mejores.
-    ~Im_JVallejo
+    <p>Las malas ideas siempre son las mejores.<br>
+    ~Im_JVallejo</p>
 </div>
 
 <div id="badges" align="center">
