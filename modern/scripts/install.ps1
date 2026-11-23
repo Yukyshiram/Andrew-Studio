@@ -33,7 +33,7 @@ try {
     }
     Run-Step { docker compose up -d --wait --wait-timeout 120 }
     Run-Step { docker compose exec -T app php artisan migrate --force }
-    if ($Demo) { Run-Step { docker compose exec -T app php artisan db:seed --class=DemoSeeder --force } }
+    if ($Demo) { Run-Step { docker compose exec -T app php artisan db:seed --class=LibraryDemoSeeder --force } }
     $configuredPort = (Get-Content '.env' | Where-Object { $_ -match '^APP_PORT=' } | Select-Object -First 1) -replace '^APP_PORT=', ''
     Write-Output "Bibliotecary está disponible en http://localhost:$configuredPort"
     Write-Output 'El legado y su base de datos se conservan. No se ejecutó ninguna importación.'
