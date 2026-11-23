@@ -3,7 +3,8 @@ import AxeBuilder from "@axe-core/playwright";
 
 for (const path of ["/", "/catalog", "/login", "/register"]) {
     test(`accesibilidad WCAG automatizada ${path}`, async ({ page }) => {
-        await page.goto(path);
+        const response = await page.goto(path);
+        expect(response?.status()).toBe(200);
         await expect(page.getByRole("main")).toBeVisible();
         const results = await new AxeBuilder({ page })
             .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
@@ -13,7 +14,8 @@ for (const path of ["/", "/catalog", "/login", "/register"]) {
 }
 
 test("accesibilidad de las pantallas de gestión y perfil", async ({ page }) => {
-    await page.goto("/login");
+    const login = await page.goto("/login");
+    expect(login?.status()).toBe(200);
     await page
         .getByLabel("Correo electrónico", { exact: true })
         .fill("demo.admin@example.test");

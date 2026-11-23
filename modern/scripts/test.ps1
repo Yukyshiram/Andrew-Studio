@@ -18,7 +18,7 @@ try {
         Run-Step { node scripts/playwright.mjs install chromium }
         Run-Step { docker compose --profile qa up -d --wait --wait-timeout 90 app-e2e }
         $qaStarted = $true
-        Run-Step { docker compose exec -T app-e2e sh -c 'mkdir -p storage/app/private && touch storage/app/private/e2e.sqlite && php artisan migrate --force --no-interaction && php artisan db:seed --class=DemoSeeder --force --no-interaction && php artisan cache:clear' }
+        Run-Step { docker compose exec -T --user www-data app-e2e sh -c 'mkdir -p storage/app/private && touch storage/app/private/e2e.sqlite && php artisan migrate --force --no-interaction && php artisan db:seed --class=DemoSeeder --force --no-interaction && php artisan cache:clear' }
         Run-Step { npm run test:e2e }
     }
 } finally {
