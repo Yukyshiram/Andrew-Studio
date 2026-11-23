@@ -31,8 +31,8 @@ test("tesorería real: cargo exacto, consulta privada, pago, reversión e histor
     const folder = process.env.FINANCE_SCREENSHOT_DIR
         ? `${process.env.FINANCE_SCREENSHOT_DIR}/${browserName}`
         : browserName === "chromium"
-          ? "../docs/screenshots/v3/finance"
-          : `../docs/screenshots/v3/finance/${browserName}`;
+          ? "output/playwright/finance"
+          : `output/playwright/finance/${browserName}`;
     await fs.mkdir(folder, { recursive: true });
     for (const surface of [page, reader]) {
         surface.on("pageerror", (error) => errors.push(error.message));

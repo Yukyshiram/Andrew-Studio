@@ -30,7 +30,7 @@ test("circulación real: lector solicita, personal entrega, renueva, avisa y dev
     }
     const folder = process.env.CIRCULATION_SCREENSHOT_DIR
         ? `${process.env.CIRCULATION_SCREENSHOT_DIR}/${browserName}`
-        : "../docs/screenshots/v3/laravel";
+        : "output/playwright/circulation";
     await fs.mkdir(folder, { recursive: true });
     try {
         const unique = Date.now();
@@ -178,7 +178,7 @@ test("circulación real: lector solicita, personal entrega, renueva, avisa y dev
 
         const renewalFolder = process.env.RENEWAL_SCREENSHOT_DIR
             ? `${process.env.RENEWAL_SCREENSHOT_DIR}/${browserName}`
-            : "../docs/screenshots/v3/renewals";
+            : "output/playwright/renewals";
         await fs.mkdir(renewalFolder, { recursive: true });
         await reader
             .getByRole("button", {
