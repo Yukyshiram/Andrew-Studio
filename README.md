@@ -204,3 +204,24 @@ Las nuevas ramas parten de `main` actualizado y utilizan `feature/`, `fix/`, `re
 ## Licencia
 
 [GPL-3.0-only](LICENSE). Las dependencias conservan sus licencias originales. Los avisos de las 44 dependencias de ejecución de la demo se incluyen en [THIRD_PARTY_NOTICES.txt](demo/public/licenses/THIRD_PARTY_NOTICES.txt) y se distribuyen también con el sitio estático.
+
+<div id="header" align="center">
+    <img src="https://github.com/Yukyshiram/Recursos_Narwhal_Project/blob/main/Im_JVallejo.jpeg?raw=true" width="200" style="border-radius: 50%;"/>
+    <h1 align="center">Hola, soy Jesús Vallejo! 👋</h1>
+    <h3 align="center">🚀 Full Stack Developer | 🎨 UI/UX Designer | 🧠 Project Manager </h3>
+
+    Las malas ideas siempre son las mejores.
+    ~Im_JVallejo
+</div>
+
+<div id="badges" align="center">
+  <!-- <a href="https://twitter.com/Im_JVallejo" target="_blank">
+    <img src="https://img.shields.io/twitter/follow/Im_JVallejo?color=blue&logo=twitter&style=flat-square" alt="Twitter Badge"/>
+  </a> -->
+  <a href="https://www.instagram.com/Im_JVallejo" target="_blank">
+    <img src="https://img.shields.io/badge/@Im_JVallejo-E4405F?style=flat-square&logo=instagram&logoColor=white" alt="Instagram Badge"/>
+  </a>
+  <a href="https://www.linkedin.com/in/im-jvallejo" target="_blank">
+    <img src="https://img.shields.io/badge/Im_JVallejo-0077B5?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn Badge"/>
+  </a>
+</div>
