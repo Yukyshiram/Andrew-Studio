@@ -1,0 +1,168 @@
+:root {
+    --motion-fast: 140ms;
+    --motion-base: 240ms;
+    --motion-book: 420ms;
+    --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+.button {
+    transition:
+        transform var(--motion-fast) var(--motion-ease),
+        background-color var(--motion-fast),
+        border-color var(--motion-fast);
+}
+.button:active:not(:disabled) {
+    transform: scale(0.97);
+}
+.nav-item {
+    position: relative;
+    isolation: isolate;
+}
+.book-card-cover {
+    perspective: 1000px;
+}
+.book-card-cover .book-cover {
+    transition:
+        transform var(--motion-base) var(--motion-ease),
+        box-shadow var(--motion-base);
+    transform-origin: 20% center;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .book-card-cover:hover .book-cover {
+        transform: translateY(-6px) rotateY(-8deg) rotateZ(-1deg);
+        box-shadow: 14px 22px 28px #0004;
+    }
+    .editorial-books:hover .editorial-book:first-child {
+        translate: -8px -6px;
+    }
+    .editorial-books:hover .editorial-book:last-child {
+        translate: 8px -4px;
+    }
+}
+.book-card-cover:focus-visible .book-cover {
+    transform: translateY(-4px);
+}
+.editorial-book {
+    transition: translate var(--motion-book) var(--motion-ease);
+}
+.interactive-book-stage {
+    width: 100%;
+    display: grid;
+    justify-items: center;
+    gap: 20px;
+    padding: 30px 20px 12px;
+    perspective: 1200px;
+}
+.physical-book {
+    width: min(260px, 75%);
+    aspect-ratio: 2 / 3;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateY(-12deg) rotateZ(-3deg);
+}
+.physical-cover {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+}
+.physical-cover .book-cover {
+    height: 100%;
+    width: 100%;
+    box-shadow: 12px 20px 34px #0005;
+    backface-visibility: hidden;
+}
+.physical-cover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: #bdb69e;
+    transform: rotateY(180deg);
+    backface-visibility: hidden;
+    border-radius: 3px;
+}
+.physical-pages {
+    position: absolute;
+    inset: 4px -8px 4px 6px;
+    padding: 32px 24px;
+    background: repeating-linear-gradient(
+        90deg,
+        #d4ccaf 0px,
+        #d4ccaf 1px,
+        #ede6ce 1px,
+        #ede6ce 4px
+    );
+    border-radius: 4px 8px 8px 4px;
+    color: #3b4031;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 16px 20px 30px #0003;
+}
+.physical-pages span {
+    font-size: 12px;
+    letter-spacing: 0.09em;
+}
+.physical-pages strong {
+    font:
+        italic 28px Georgia,
+        serif;
+    overflow-wrap: anywhere;
+}
+.physical-pages small {
+    font-size: 14px;
+}
+.physical-spine {
+    position: absolute;
+    left: -8px;
+    top: 2px;
+    bottom: 2px;
+    width: 10px;
+    background: #303a2d;
+    transform: rotateY(-70deg);
+    transform-origin: right;
+}
+.book-interaction-note {
+    margin: -10px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+}
+.dialog-overlay[data-state="closed"] {
+    animation: enter-fade var(--motion-fast) reverse;
+}
+.dialog-content[data-state="closed"] {
+    animation: enter-fade var(--motion-fast) reverse;
+}
+::view-transition-group(*) {
+    animation-duration: var(--motion-book);
+    animation-timing-function: var(--motion-ease);
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: var(--motion-base);
+}
+@media (max-width: 780px) {
+    .physical-book {
+        width: min(200px, 62%);
+        transform: rotateY(-5deg);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .physical-book,
+    .physical-cover,
+    .book-card-cover .book-cover {
+        transform: none !important;
+    }
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+        animation: none !important;
+    }
+}

@@ -1,0 +1,20 @@
+{
+    "version": 1,
+    "users": [
+        {
+            "id": 41,
+            "email": "ana.lectora@example.test",
+            "password": "$2y$04$BCSq75/qsAh1mmMwfaL..O7f.5f4Jbp2Rbxcj9tKPoAHYNYJ1H8Aa"
+        }
+    ],
+    "catalogo_books": [
+        {
+            "id_libro": 83,
+            "Nombre_book": "El nombre d'Andrew",
+            "Autor_book": "Autora de demostración",
+            "Editorial_book": "Editorial ficticia",
+            "Año_Salida_book": "X / 1984",
+            "Des_book": ""
+        }
+    ]
+}

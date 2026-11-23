@@ -1,0 +1,124 @@
+# Implementación de Andrew's Bibliotecary 3.0
+
+Este registro documenta las puertas locales A–F. El alcance está en [Dominio y etapas](16_DOMINIO_BIBLIOTECARIO_3.md); el cierre funcional, la cobertura, las guías y las limitaciones están en [Resultados 3.0](22_RESULTADOS_Y_LIMITES_3.md). No se declara una publicación ni preparación automática para producción.
+
+## Etapa A verificada
+
+Se añadieron ISBN validado/normalizado, edición e idioma sin reemplazar los campos antiguos; ejemplares con códigos únicos, ubicación y condición; membresías asociadas a cuentas; políticas y calendario configurables. Ninguna ficha antigua se convirtió automáticamente en un ejemplar. Las cuentas nuevas reciben membresía dentro de su transacción; las antiguas pueden registrarse mediante el personal.
+
+Las pantallas reales `/manage/inventory`, `/manage/members` y `/manage/policy` permiten las operaciones correspondientes, con validación, búsquedas/paginación y auditoría. Solo administrador modifica políticas. Personal bibliotecario no modifica roles ni tarifas. Los cambios de política requieren confirmación. No se añadieron cuentas falsas al frontend estático.
+
+Puerta ejecutada: **113 pruebas PHP / 729 aserciones tanto en SQLite como en MySQL 8.4**, sin fallos ni omisiones; PHPStan, TypeScript y builds de Laravel/demo aprobados; control heurístico de secretos aprobado; **3 nuevos recorridos Playwright aprobados**. Evidencia (referencia histórica o evidencia local no publicada). No se confunde esta puerta con la regresión completa de navegador, que se repetirá al integrar los módulos.
+
+Se corrigieron durante la etapa: reversión SQLite que necesitaba retirar primero el índice ISBN, entrada ISBN de tipo array que causaba error de servidor y adaptación de tablas nuevas al estilo desplazable existente. Las pruebas comprueban la conservación de títulos/cuentas al revertir/reaplicar la migración aislada.
+
+### Reproducción
+
+```powershell
+cd modern
+docker compose exec -T app php artisan test --compact
+npm run typecheck
+npm run build
+./scripts/test-mysql.ps1
+npm run test:e2e -- inventory.spec.ts policy.spec.ts
+```
+
+El script MySQL crea credenciales sintéticas dentro de `.local/v3-test.env` (ignorado por Git) y levanta el proyecto Docker separado `bibliotecary-v3-qa`. La base `bibliotecary_v3_qa` usa tmpfs y no publica puertos. Comparte solamente el código y las dependencias PHP ya instaladas; no monta el volumen de la base existente. Requiere haber construido la imagen `bibliotecary-v2-app` y disponer del volumen Composer instalado. No ejecutarlo con configuraciones de producción.
+
+Pint se ejecutó con los archivos PHP modificados explícitos y `--format agent`. `--dirty` no puede detectar Git dentro del contenedor porque el repositorio está en la carpeta padre del montaje; no se montó ni copió `.git` para eludir esa limitación.
+
+La migración es aditiva. Para bases con datos nuevos de membresía/inventario, una reversión debe ir precedida de respaldo/exportación: retirar las tablas nuevas perdería esas operaciones. La prueba de reversión se ejecuta exclusivamente en bases aisladas; no se aplicó rollback sobre datos existentes.
+
+## Etapa B verificada
+
+La circulación real separa solicitud, validación, preparación de un ejemplar, entrega física y devolución. Incluye rechazo con motivo, cancelación privada, condiciones de retorno, historial, disponibilidad e inventario; las operaciones repetidas conservan el resultado anterior. Las fichas con circulación abierta no se archivan. Se revalida el permiso del personal dentro de la transacción.
+
+Puerta ejecutada: **159 pruebas PHP / 1.055 aserciones en SQLite**, con una omisión deliberada de la prueba exclusiva de concurrencia MySQL; **159 pruebas / 1.077 aserciones en MySQL 8.4**, sin omisiones ni fallos. Dos procesos simultáneos verificaron que un ejemplar no se prepara para dos personas y que una entrega repetida crea un único préstamo y evento. **21 recorridos Playwright Laravel aprobados**, incluidos los anteriores y el ciclo lector/personal. PHPStan, TypeScript, compilaciones y control heurístico de secretos aprobados. El posterior ajuste de mensajes de entregas repetidas tiene una comprobación HTTP específica. Evidencia de B (referencia histórica o evidencia local no publicada).
+
+Las capturas en `screenshots/v3/laravel/` corresponden a operaciones reales en la base sintética de QA. Las de `demo-before-circulation/` son una línea base de la demo 2.6, todavía sin el recorrido 3.0. No se conserva un informe completo verificable del último recorrido estático tras sobrescribirse su archivo; se repetirá al integrar F. La comprobación específica de ausencia de 3D aprobó seis pruebas en tres motores.
+
+Se reforzó el aislamiento: el arranque de las pruebas rechaza cualquier base distinta de SQLite en memoria o del MySQL de QA en `db-test`. La reversión de lotes importados comprueba referencias nuevas y admite las huellas antiguas solamente si los nuevos metadatos permanecen neutros. Los archivos temporales de las pruebas de migración se separan por motor.
+
+### Actualización de la base local
+
+Se ejecutó `node modern/scripts/upgrade-local.mjs`: respaldo privado transaccional, mantenimiento, migraciones aditivas y comparación de todas las columnas anteriores de usuarios, libros, lotes y auditoría. El registro privado confirma `existingDataPreserved: true`. No se sembraron datos ficticios en esa base. Los scripts de respaldo y actualización están versionados; los SQL y sus registros permanecen ignorados en `.local/backups/` y no deben publicarse ni incluirse en entregas. **La restauración de ese respaldo no se ha probado**. Las pruebas destructivas y de reversión se ejecutan únicamente en bases sintéticas aisladas.
+
+## Etapa C verificada
+
+Se completaron posición de espera privada, caducidad de recogida con fecha local inclusiva, asignación automática al incorporar/reparar ejemplares, cierre con aviso de reservas en espera de membresías inactivas y renovaciones privadas/idempotentes con registro propio. Las renovaciones conservan las condiciones acordadas, revalidan derechos y se bloquean ante solicitudes abiertas de otras personas. Los avisos internos incluyen título y fechas legibles; no son correo externo. La interfaz real permite confirmar/cancelar la renovación, revisar avisos y ejecutar mantenimiento manual. [Reglas y guía](18_RESERVAS_Y_RENOVACIONES.md).
+
+Puerta final: **180 pruebas PHP / 1.195 aserciones en SQLite**, con dos omisiones deliberadas de concurrencia exclusiva de MySQL; **180 pruebas / 1.231 aserciones en MySQL 8.4**, todas aprobadas. Incluye dos procesos simultáneos con una misma clave de renovación. PHPStan, TypeScript, Pint y compilación aprobados. **21 recorridos Playwright aprobados**, más una repetición dirigida del ciclo con el texto final de avisos y restauración del foco. Las últimas ramas de membresía se comprobaron después con las suites PHP completas. Evidencia (referencia histórica o evidencia local no publicada).
+
+Se corrigió un desfase de fecha civil al renovar: convertir primero un `DATE` de UTC a México restaba un día. La prueba sobre un día de cierre demuestra el cálculo correcto. El diálogo ahora restaura el foco en su alternativa cuando la acción queda desactivada al agotarse las renovaciones. Las capturas de C se guardan en carpetas nuevas, conservando B.
+
+La migración C se aplicó a QA y a la base local tras un nuevo respaldo privado y comparación de tablas históricas, sin seeding. Está activo el servicio local opcional `scheduler`, sin puertos ni cambios globales; se comprobó la tarea horaria declarada y una ejecución manual. No se ha confundido esa comprobación con haber observado todavía su siguiente disparo horario. Los SQL privados no se publican y su restauración sigue pendiente de prueba.
+
+## Etapa D verificada
+
+El libro financiero registra cargos por retraso, daño y pérdida, pagos recibidos por otros medios, abonos, ajustes y reversiones vinculadas. Los cálculos usan centavos enteros, las claves evitan duplicación y las correcciones no borran movimientos. La mora anterior se registra antes de renovar y puede reconstruirse desde renovaciones previas. Se distinguen saldos registrados y cargos calculados pendientes; el bloqueo por deuda permite siempre devolver.
+
+El lector consulta su cuenta en **Cargos y saldo**; el administrador dispone de **Tesorería**, búsqueda de socios, movimientos confirmados e informes por periodo con pagos y reversiones separados. La moneda mostrada al abrir el formulario se revalida dentro de la transacción. [Guía y reglas](19_TESORERIA_Y_MOVIMIENTOS.md).
+
+Puerta ejecutada: **226 pruebas PHP / 1.474 aserciones en SQLite** (222 aprobadas y cuatro omisiones exclusivas de MySQL); **226 pruebas / 1.534 aserciones en MySQL 8.4**, todas aprobadas. PHPStan, TypeScript, Pint y builds de Laravel/demo aprobados. **22 recorridos nativos aprobados**, **seis de circulación/finanzas en Chromium, Firefox y WebKit**, y otros **tres financieros en esos motores tras el control de moneda**. NPM y Composer: cero vulnerabilidades notificadas. Evidencia (referencia histórica o evidencia local no publicada). La comprobación estática completa de 2.6 continúa como regresión adicional; todavía no es la demo funcional 3.0.
+
+Se corrigieron el reinicio de formularios tras guardar en Inertia 3, el retorno del foco en WebKit y una regresión de Firefox 1572 al analizar regiones con `aria-labelledby`. Se conservaron sus nombres accesibles mediante `aria-label` y pasó Axe normal. La demo comparte componentes con Laravel; su TypeScript ahora resuelve una sola copia de los tipos React, coherente con la deduplicación de Vite ya existente.
+
+Las migraciones D se aplicaron a la base local tras respaldo privado, sin seed. Se observaron ambos disparos horarios de reservas/cargos con `DONE` a las 10:00 UTC del 22/11/2026. Se verificaron los 34 archivos del snapshot inicial y todas las referencias protegidas. La comparación del trabajo 3.0 usa la base 2.6 `827be7c`; el commit `372dbf3` es anterior a la restauración, distinción ya documentada en la auditoría inicial. Conservación (referencia histórica o evidencia local no publicada).
+
+**Regresión estática adicional aún abierta:** la suite de 36 casos terminó con 31 aprobados, dos omisiones de capturas redundantes y tres fallos en WebKit. Los tres casos pasaron aislados, pero otra ejecución completa volvió a fallar en navegación/filtrado y foco responsive. Una tercera comprobación de WebKit, ya con condiciones explícitas de llegada a las rutas, aprobó siete casos, omitió una captura y falló cuatro. Se observaron entre 156 y 262 MiB de RAM libre durante la investigación; los snapshots de algunos fallos mostraron el DOM final correcto tras la espera. Esto no demuestra una causa única ni permite afirmar ausencia de regresiones. No se detuvieron procesos de otros proyectos ni se descartaron las aserciones. Falta comprobar los recorridos con recursos suficientes y resolver cualquier fallo que persista.
+
+Commits D: `fb6d6f8` persistencia; `d8b0e2d` cálculo y movimientos; `def5433` rutas, permisos y deuda; `fd228d0` interfaz; `8b1e490` moneda al confirmar; `77b98de` tipos de React compartidos. E y F todavía deben aportar novedades, paneles operativos, datos sintéticos ampliados, circulación estática y cierre de CI/entregables.
+
+Una comprobación adicional de esos tres recorridos en WebKit aprobó con un perfil local explícito de 15 segundos por aserción y 90 por caso: duraciones de 33,1, 24,9 y 24,6 segundos. El perfil normal conserva sus límites originales, sin reintentos ni omisiones añadidas. Este resultado confirma los recorridos con mayor tolerancia temporal; no cierra los fallos de la suite normal ni acredita rendimiento aceptable bajo la presión de memoria observada.
+
+**Cierre de la regresión estática adicional:** la siguiente suite completa con los límites normales terminó con **34 aprobados, dos omisiones de capturas redundantes y cero fallos**, en Chromium, Firefox y WebKit, sin reintentos. Se añadieron comprobaciones explícitas de URL y estado tras navegar. Durante esta ejecución se observaron aproximadamente 3,4 GiB de memoria libre; no se atribuye el resultado a un único cambio. Los resultados anteriores se conservan arriba como diagnóstico, no como estado final. Esta comprobación corresponde todavía a la demo 2.6, no acredita el ciclo estático 3.0 pendiente.
+
+## Etapa E verificada
+
+Se implementaron novedades públicas con búsqueda, categorías, estados, filtros por la fecha elegida y paginación. Publicación editorial, llegada estimada e incorporación real permanecen separadas. El personal registra y modifica lotes con auditoría, idempotencia y versiones; una llegada confirmada exige inventario previo. Las notas se escapan como texto. Los lotes cancelados y los títulos archivados se excluyen del listado público. Las adquisiciones abiertas impiden archivar su ficha, y las referencias al libro y al responsable impiden revertir un lote importado en uso. [Guía](20_NOVEDADES_Y_PANELES.md).
+
+Los paneles muestran datos reales de su base: cuenta propia para el lector, circulación e incorporaciones para biblioteca y cifras financieras para administración. No generan movimientos al consultarse ni envían información financiera global a otros perfiles. El día lo calcula el servidor con la zona de la biblioteca. Se conserva el catálogo reciente con el nombre **Últimas fichas catalogadas**, separado de las llegadas físicas. El enlace **Panel** permite volver desde otros módulos.
+
+La muestra `LibraryDemoSeeder` exige un entorno local/de pruebas explícitamente habilitado y una base sintética nueva. Contiene inventario, circulación, mora/pago parcial ficticios y novedades coherentes. El seeding normal ya no crea una cuenta genérica; producción, datos existentes, identificadores legados, cuentas modificadas y políticas en uso quedan protegidos. Repetir la muestra instalada no reinicia datos. Sus relojes temporales se restauran. No se sembró la base local ni la QA acumulada: se probó en las bases aisladas.
+
+Puerta final: **276 pruebas PHP / 1.869 aserciones en SQLite** (272 aprobadas y cuatro omisiones exclusivas de procesos MySQL); **276 pruebas / 1.929 aserciones en MySQL 8.4**, todas aprobadas. PHPStan incluyó aplicación y seeder; Pint, TypeScript y build aprobados. **23 recorridos Playwright nativos aprobados**, **tres nuevos en Chromium/Firefox/WebKit** con temas claro/oscuro, foco, móvil e inventario, y **seis anteriores de circulación/tesorería en esos motores**. Tras separar CSS y añadir Panel volvió a pasar la suite completa de 23 y la matriz nueva de tres. Evidencia (referencia histórica o evidencia local no publicada).
+
+Los estilos nuevos se cargan por vista: CSS de noticias compartido con la futura demo y CSS del panel diferido; la hoja global anterior queda intacta. Las capturas de E están en `screenshots/v3/acquisitions/` y `acquisitions-smoke/`. La demo 2.6 volvió a compilar y pasó el escaneo heurístico de secretos/archivos privados. La referencia de auditorías de dependencias sigue siendo D, sin dependencias nuevas en E; se repetirá al integrar F.
+
+La migración E se aplicó a la base local con respaldo privado, comparación de columnas históricas y sin seeding. El respaldo real continúa sin prueba de restauración. Se verificaron de nuevo los 34 archivos frente a la base 2.6, la licencia y las referencias protegidas: conservación (referencia histórica o evidencia local no publicada). No hubo push, merge ni despliegue.
+
+Commits E: `4590b24` modelo/operaciones; `ce93958` responsable de adquisición y reversión; `f3f15e4` muestra protegida; `f91fe4f` novedades/gestión; `b77fc7e` paneles y recorridos. La integración estática posterior se registra en F, sin publicar una URL externa.
+
+## Etapa F verificada
+
+La demo reutiliza presentación, controles, portadas y noticias; añade perfiles ficticios, cuenta lectora, ciclo completo de solicitud/preparación/entrega/renovación/devolución, disponibilidad, reserva/expiración, avisos, cuenta en centavos, pago/reversión y novedades. El estado es de memoria y el restablecimiento requiere confirmación. No autentica ni llama a Laravel/MySQL; no se restauró la escena 3D.
+
+La regresión final aprobó **65 de 69 casos Playwright**, con cuatro omisiones diagnósticas previstas y sin fallos ni reintentos: tres motores, tacto emulado, teclado, reflujo a 320 px, temas, reduced-motion, WebGL ausente y rutas profundas. Las **13 pruebas Node** y TypeScript de aplicación/pruebas aprobaron. Una prueba específica demostró primero que faltaba soporte efectivo de layout; se activó y comprobó la animación de la misma tarjeta al filtrar y su ausencia con movimiento reducido.
+
+Volvió a pasar la puerta Laravel: **272 PHP/1.869 aserciones en SQLite**, cuatro casos exclusivos omitidos; **276 PHP/1.929 en MySQL**, todos aprobados; PHPStan, TypeScript/build, auditorías y **23 recorridos nativos**. El MySQL de pruebas se detiene en `finally`; se rechazan orígenes E2E externos o de la aplicación principal. No cambió lógica PHP en F.
+
+Instalación independiente de demo: dependencias nuevas, sin backend, artefactos idénticos. Instalación limpia de Laravel y su repetición: otro proyecto Compose, nuevas dependencias/volúmenes y muestra protegida; entorno y datos conservados. Respaldo/restauración sintéticos aprobados; respaldo real sin restaurar. La medición antes/después documenta bytes, LCP, CLS y tareas largas, con memoria disponible diferente y sin afirmación de FPS físicos.
+
+Evidencia F (referencia histórica o evidencia local no publicada), [informe y límites](22_RESULTADOS_Y_LIMITES_3.md), [guía de demo](21_DEMO_CIRCULACION.md), [guía de uso real](23_GUIA_DE_USO_3.md) y [preparación de publicación](24_PREPARACION_PUBLICACION_3.md). Se generaron 72 capturas nuevas de demo. La documentación de portada se actualizó; las fuentes originales y referencias protegidas están comprobadas en la conservación final.
+
+Commits F: `24c7908` referencia de rendimiento; `9b8f3e0` motor; `8213dfa` recorridos; `ba9e683` QA MySQL/orígenes; `26f51ab` instalador protegido; `ea31dd5` layout/reduced-motion; `5439879` auditoría de tema. El commit documental final añade guías y resultados.
+
+## Estado de las etapas restantes
+
+| Etapa | Estado actual | Evidencia que se exigirá al cerrar |
+|---|---|---|
+| B: solicitudes, preparación, entrega y devolución | Verificada | Ciclo real, negativas, idempotencia y concurrencia MySQL documentados arriba |
+| C: reservas, renovación, vencimientos y avisos | Verificada | FIFO, caducidad, calendario, límites, avisos y concurrencia de renovación documentados arriba |
+| D: multas, movimientos, pagos, ajustes e informes | Verificada | Enteros, idempotencia, permisos, historial, reversión y concurrencia MySQL documentados arriba |
+| E: novedades y administración integrada | Verificada | Fechas separadas, incorporación con inventario, filtros, privacidad, métricas de BD y muestra protegida comprobadas arriba |
+| F: demo e integración visual | Verificada localmente | Ciclo completo, 13 Node, 65 Playwright, instalaciones independientes, guías, capturas y métricas con límites documentados |
+
+Las guías, documentación financiera, capturas, cobertura y commits están enlazados en el informe final. Los préstamos se comprobaron mediante operaciones reales y recorridos de demo, además de sus modelos. Publicación, CI remoto y preparación del hosting futuro siguen fuera de lo ejecutado.
+
+Commits de C: `feb267f` tablas de avisos/renovaciones; `0bee5d6` operaciones y controles; `b798ac8` interfaz y navegación por teclado; `d773b18` programador Docker local; `43eb46f` cierre de reservas con membresías inactivas y mensajes legibles. D incorporó la liquidación de periodos anteriores antes de renovar.
+
+## Git y conservación
+
+Commits de la etapa A: `6357ef7` modelo e ISBN; `095201b` inventario; `1acf7f1` socios; `376fd7e` políticas; `80e5623` tipos ISBN; `d564a11` MySQL aislado. Diseño previo: `e17e1ac`. Cada unidad se registró después de las comprobaciones pertinentes.
+
+`git ls-remote --heads origin` confirmó que la única rama remota publicada es `main`, en `372dbf3`. No se hizo fetch que moviese referencias, push, merge o despliegue. La demo de desarrollo continúa en 4173. Las migraciones A/B se aplicaron a SQLite QA en 8082, al MySQL aislado y a la base local después del respaldo y la comparación descritos arriba.

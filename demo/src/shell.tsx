@@ -1,0 +1,344 @@
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useLocation } from "react-router-dom";
+import * as Dialog from "@radix-ui/react-dialog";
+import { m as motion, useReducedMotion } from "motion/react";
+import {
+  Library,
+  LayoutDashboard,
+  Home,
+  Info,
+  Menu,
+  X,
+  Sun,
+  Moon,
+  Search,
+  ArrowLeft,
+  PanelLeft,
+  BookCheck,
+  Wallet,
+  CalendarDays,
+  BookMarked,
+} from "lucide-react";
+import { DemoLink } from "./navigation";
+import { Button, cn } from "../../modern/resources/js/components/ui";
+import { ProfilePickerButton } from "./library-context";
+
+function ThemeToggle() {
+  const [light, setLight] = useState(
+    () => document.documentElement.dataset.theme === "light",
+  );
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label={light ? "Activar tema oscuro" : "Activar tema claro"}
+      onClick={() => {
+        document.documentElement.dataset.theme = light ? "dark" : "light";
+        setLight(!light);
+        try {
+          localStorage.setItem("bibliotecary-theme", light ? "dark" : "light");
+        } catch {
+          /* Preferencia opcional. */
+        }
+      }}
+    >
+      {light ? (
+        <Moon size={18} aria-hidden="true" />
+      ) : (
+        <Sun size={18} aria-hidden="true" />
+      )}
+    </Button>
+  );
+}
+function Navigation({
+  admin,
+  mobile = false,
+  close,
+}: {
+  admin: boolean;
+  mobile?: boolean;
+  close: (href: string) => void;
+}) {
+  const { pathname } = useLocation();
+  const reduced = useReducedMotion();
+  const links = admin
+    ? [
+        { href: "/demo/admin", label: "Resumen", Icon: LayoutDashboard },
+        {
+          href: "/demo/admin/circulation",
+          label: "Circulación",
+          Icon: BookCheck,
+        },
+        {
+          href: "/demo/admin/finance",
+          label: "Tesorería ficticia",
+          Icon: Wallet,
+        },
+        {
+          href: "/demo/admin/books",
+          label: "Gestión de fichas",
+          Icon: Library,
+        },
+      ]
+    : [
+        { href: "/", label: "Inicio", Icon: Home },
+        { href: "/catalog", label: "Catálogo", Icon: Library },
+        { href: "/my-library", label: "Mi biblioteca", Icon: BookMarked },
+        { href: "/news", label: "Novedades", Icon: CalendarDays },
+        { href: "/about", label: "Acerca del proyecto", Icon: Info },
+      ];
+  return (
+    <>
+      <div className="demo-brand-row">
+        <DemoLink
+          href="/"
+          className="brand"
+          aria-label="Andrew's Bibliotecary, inicio"
+          onClick={() => close("/")}
+        >
+          <span className="brand-mark" aria-hidden="true">
+            a<span>◦</span>
+          </span>
+          <span className="brand-text">
+            andrew's<span>BIBLIOTECARY</span>
+          </span>
+        </DemoLink>
+        {mobile && (
+          <Dialog.Close asChild>
+            <Button variant="ghost" size="icon" aria-label="Cerrar navegación">
+              <X size={20} aria-hidden="true" />
+            </Button>
+          </Dialog.Close>
+        )}
+      </div>
+      {admin && <p className="admin-nav-label">Panel administrador</p>}
+      <nav
+        className="main-navigation"
+        aria-label={mobile ? "Navegación móvil" : "Navegación principal"}
+      >
+        {links.map(({ href, label, Icon }) => {
+          const active =
+            pathname === href ||
+            (href === "/catalog" && pathname.startsWith("/catalog/"));
+          return (
+            <DemoLink
+              key={href}
+              href={href}
+              onClick={() => close(href)}
+              className={cn("nav-item", active && "active")}
+              aria-current={active ? "page" : undefined}
+            >
+              {active && (
+                <motion.span
+                  layoutId={
+                    reduced
+                      ? undefined
+                      : `navigation-${admin ? "admin" : "visitor"}-${mobile ? "mobile" : "desktop"}`
+                  }
+                  className="active-nav-surface"
+                  transition={{ duration: 0.2 }}
+                />
+              )}
+              <Icon size={19} aria-hidden="true" />
+              <span>{label}</span>
+            </DemoLink>
+          );
+        })}
+      </nav>
+      <div className="sidebar-bottom demo-secondary-navigation">
+        {admin ? (
+          <DemoLink
+            href="/catalog"
+            onClick={() => close("/catalog")}
+            className="text-link"
+          >
+            <ArrowLeft size={16} aria-hidden="true" />
+            Volver a la biblioteca
+          </DemoLink>
+        ) : (
+          <DemoLink
+            href="/demo/admin"
+            onClick={() => close("/demo/admin")}
+            className="admin-entry"
+            aria-label="Probar panel administrador"
+          >
+            <PanelLeft size={19} aria-hidden="true" />
+            <span>
+              Probar panel administrador<small>Demostración interactiva</small>
+            </span>
+          </DemoLink>
+        )}
+      </div>
+    </>
+  );
+}
+export function Shell({ children }: { children: ReactNode }) {
+  const [menu, setMenu] = useState(false);
+  const { pathname } = useLocation();
+  const openedAt = useRef(pathname);
+  const pendingNavigation = useRef<string | null>(null);
+  const admin =
+    pathname === "/demo/admin" || pathname.startsWith("/demo/admin/");
+  const context = admin
+    ? pathname.endsWith("/books")
+      ? "Administración / Fichas"
+      : pathname.endsWith("/circulation")
+        ? "Biblioteca / Circulación"
+        : pathname.endsWith("/finance")
+          ? "Administración / Tesorería"
+          : "Administración / Resumen"
+    : pathname === "/"
+      ? "Inicio"
+      : pathname === "/catalog"
+        ? "Catálogo"
+        : pathname.startsWith("/catalog/")
+          ? "Ficha del libro"
+          : pathname === "/about"
+            ? "Acerca del proyecto"
+            : pathname === "/my-library"
+              ? "Mi biblioteca"
+              : pathname === "/news"
+                ? "Novedades"
+                : "Biblioteca";
+  useEffect(() => setMenu(false), [pathname]);
+  useEffect(() => {
+    if (pendingNavigation.current !== pathname) return;
+    const frame = requestAnimationFrame(() =>
+      document
+        .querySelector<HTMLElement>("main h1")
+        ?.focus({ preventScroll: true }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [pathname]);
+  useEffect(() => {
+    const query = matchMedia("(min-width:781px)");
+    const change = () => {
+      if (query.matches) setMenu(false);
+    };
+    query.addEventListener("change", change);
+    return () => query.removeEventListener("change", change);
+  }, []);
+  return (
+    <Dialog.Root
+      open={menu}
+      onOpenChange={(open) => {
+        if (open) {
+          openedAt.current = pathname;
+          pendingNavigation.current = null;
+        }
+        setMenu(open);
+      }}
+    >
+      <a className="skip-link" href="#contenido">
+        Saltar al contenido
+      </a>
+      <div className={cn("app-layout demo-app", admin && "demo-admin")}>
+        <aside className="sidebar desktop-sidebar">
+          <Navigation admin={admin} close={() => {}} />
+        </aside>
+        <Dialog.Portal>
+          <Dialog.Overlay className="mobile-scrim" />
+          <Dialog.Content
+            className={cn(
+              "sidebar sidebar-open mobile-navigation",
+              admin && "admin-mobile-navigation",
+            )}
+            onCloseAutoFocus={(event) => {
+              if (pendingNavigation.current || openedAt.current !== pathname) {
+                event.preventDefault();
+                requestAnimationFrame(() => {
+                  if (
+                    pendingNavigation.current &&
+                    pendingNavigation.current !== window.location.pathname
+                  )
+                    return;
+                  (
+                    document.querySelector<HTMLElement>("main h1") ??
+                    document.querySelector<HTMLElement>("main")
+                  )?.focus({ preventScroll: true });
+                  pendingNavigation.current = null;
+                });
+              }
+            }}
+          >
+            <Dialog.Title className="sr-only">
+              {admin
+                ? "Navegación de administración"
+                : "Navegación de la biblioteca"}
+            </Dialog.Title>
+            <Dialog.Description className="sr-only">
+              {admin
+                ? "Resumen, circulación, tesorería ficticia, gestión de fichas y regreso a la biblioteca."
+                : "Inicio, catálogo, Mi biblioteca, novedades y acerca del proyecto."}
+            </Dialog.Description>
+            <Navigation
+              admin={admin}
+              mobile
+              close={(href) => {
+                pendingNavigation.current = href;
+                setMenu(false);
+              }}
+            />
+          </Dialog.Content>
+        </Dialog.Portal>
+        <div className="app-main">
+          <header className="topbar">
+            <div className="topbar-left">
+              <Dialog.Trigger asChild>
+                <Button
+                  className="mobile-only"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Abrir navegación"
+                >
+                  <Menu size={21} aria-hidden="true" />
+                </Button>
+              </Dialog.Trigger>
+              <span className="context-title">{context}</span>
+            </div>
+            <div className="topbar-actions">
+              {admin ? (
+                <DemoLink href="/catalog" className="text-link header-return">
+                  <ArrowLeft size={16} aria-hidden="true" />
+                  <span>Volver a la biblioteca</span>
+                </DemoLink>
+              ) : (
+                pathname !== "/catalog" && (
+                  <DemoLink href="/catalog" className="topbar-explore">
+                    <Search size={16} aria-hidden="true" />
+                    <span>Buscar libros</span>
+                  </DemoLink>
+                )
+              )}
+              <ThemeToggle />
+              <ProfilePickerButton />
+            </div>
+          </header>
+          <div className="admin-mode-bar">
+            <span className="demo-mode-badge">Modo demostración</span>
+            <p>
+              Datos ficticios en memoria. Se reinician al recargar; no hay
+              cuentas ni cobros reales.
+            </p>
+          </div>
+          <main
+            id="contenido"
+            tabIndex={-1}
+            className="main-content page-content"
+          >
+            {children}
+          </main>
+          <footer className="app-footer">
+            <span>Andrew's Bibliotecary © 2026</span>
+            {!admin && (
+              <DemoLink href="/demo/admin" className="mobile-admin-entry">
+                Probar panel administrador
+              </DemoLink>
+            )}
+            <DemoLink href="/about">Acerca del proyecto</DemoLink>
+          </footer>
+        </div>
+      </div>
+    </Dialog.Root>
+  );
+}
