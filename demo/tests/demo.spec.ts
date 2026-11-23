@@ -3,7 +3,12 @@ import AxeBuilder from "@axe-core/playwright";
 import fs from "node:fs/promises";
 import path from "node:path";
 import books from "../src/data/books.json" with { type: "json" };
-import { gotoAsAdmin, selectProfile } from "./library-helpers";
+import {
+  gotoAsAdmin,
+  selectProfile,
+  changeTheme,
+  settleAnimations,
+} from "./library-helpers";
 
 const routes = [
   "/",
@@ -55,6 +60,7 @@ async function audit(page: Page) {
         ),
     )
     .toBe(true);
+  await settleAnimations(page);
   return new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
     .analyze();
@@ -503,10 +509,7 @@ test("accesibilidad de todas las pantallas, formularios y confirmaciones en ambo
       await page.goto(route);
       if (route.startsWith("/demo/admin")) await selectProfile(page);
       await page.locator("main h1").waitFor();
-      await page.evaluate(
-        (value) => (document.documentElement.dataset.theme = value),
-        theme,
-      );
+      await changeTheme(page, theme);
       expect((await audit(page)).violations, `${theme}: ${route}`).toEqual([]);
     }
   }

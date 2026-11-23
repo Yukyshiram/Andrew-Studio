@@ -2,6 +2,33 @@ import { expect, type Page } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 
+export async function settleAnimations(page: Page) {
+  await page.evaluate(async () => {
+    await Promise.all(
+      document
+        .getAnimations()
+        .filter(
+          (animation) =>
+            animation.effect?.getComputedTiming().iterations !== Infinity,
+        )
+        .map((animation) => animation.finished.catch(() => undefined)),
+    );
+  });
+}
+export async function changeTheme(page: Page, theme: string) {
+  const toggle = page.getByRole("button", {
+    name: theme === "light" ? "Activar tema claro" : "Activar tema oscuro",
+    exact: true,
+  });
+  if (await toggle.isVisible()) await toggle.click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+  await expect(page.locator("body")).toHaveCSS(
+    "color",
+    theme === "light" ? "rgb(32, 37, 30)" : "rgb(243, 242, 235)",
+  );
+  await settleAnimations(page);
+}
+
 export async function captureLibrary(
   page: Page,
   browserName: string,
