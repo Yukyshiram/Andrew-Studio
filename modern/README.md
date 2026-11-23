@@ -4,7 +4,7 @@ Sistema bibliotecario en español con consulta pública, cuentas y permisos real
 
 La aplicación está en `modern/`. El PHP original se conserva en la raíz y usa otra base de datos. La instalación nueva no importa datos históricos ni publica servicios fuera de loopback.
 
-![Panel bibliotecario de Andrew's Bibliotecary 3.0](../docs/screenshots/v3/acquisitions/chromium/panel-bibliotecario.png)
+![Panel bibliotecario de Andrew's Bibliotecary 3.0 con datos sintéticos](../docs/screenshots/readme/panel-laravel.webp)
 
 ## Instalación local en Windows
 

@@ -2,7 +2,7 @@
 
 Una biblioteca con circulación completa en Laravel y una demo editorial que permite explorar el recorrido de lectura sin cuentas ni infraestructura de servidor.
 
-![Inicio de Andrew's Bibliotecary](docs/screenshots/v3/demo/presentation/desktop-inicio.png)
+![Inicio de Andrew's Bibliotecary](docs/screenshots/readme/inicio.webp)
 
 ## Ver la demo en tiempo real
 
