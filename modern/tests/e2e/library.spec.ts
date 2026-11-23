@@ -1,4 +1,31 @@
 import { test, expect, type Page } from "@playwright/test";
+import { execFileSync } from "node:child_process";
+import path from "node:path";
+
+test.beforeEach(() => {
+    // Cada caso conserva las cuotas reales, sin heredar los intentos de otro caso.
+    // Solo se vacía la caché del servicio SQLite de QA, nunca la base principal.
+    execFileSync(
+        "docker",
+        [
+            "compose",
+            "exec",
+            "-T",
+            "--user",
+            "www-data",
+            "app-e2e",
+            "php",
+            "artisan",
+            "cache:clear",
+            "--no-interaction",
+        ],
+        {
+            cwd: path.resolve(import.meta.dirname, "../.."),
+            timeout: 15_000,
+            stdio: "pipe",
+        },
+    );
+});
 
 async function login(
     page: Page,
