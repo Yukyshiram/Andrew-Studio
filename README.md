@@ -30,7 +30,7 @@ El selector es un cambio de personaje ficticio, **no autenticación**. Solicitud
 
 | Área | Demo estática | Laravel |
 |---|---|---|
-| Catálogo y fichas | Búsqueda, categorías, orden, paginación y apertura CSS | Catálogo público, disponibilidad agregada, ISBN, edición e idioma |
+| Catálogo y fichas | Búsqueda, categorías, orden, paginación y portadas editoriales | Catálogo público, disponibilidad agregada, ISBN, edición e idioma |
 | Lectura | Perfiles ficticios y Mi biblioteca | Registro, sesión, membresía y cuenta privada |
 | Circulación | Solicitar, validar, preparar, entregar, renovar, devolver y cancelar | Operaciones persistentes, políticas configurables, transacciones y exclusión de préstamos simultáneos |
 | Reservas | Lista aprobada, siguiente ejemplar y reloj controlado | FIFO, caducidad, liberación programada y avisos internos |

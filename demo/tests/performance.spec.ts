@@ -179,12 +179,7 @@ test("medición estática reproducible: carga fría, catálogo y apertura CSS", 
         await expect(page.getByRole("heading", { level: 1 })).toHaveText(
           "La arquitectura del silencio",
         );
-        await page
-          .getByRole("button", { name: "Abrir portada", exact: true })
-          .click();
-        await expect(
-          page.getByRole("button", { name: "Cerrar portada", exact: true }),
-        ).toHaveAttribute("aria-pressed", "true");
+        await expect(page.locator(".physical-cover")).toBeVisible();
         await page.locator(".physical-book").evaluate(async (book) => {
           await Promise.all(
             book

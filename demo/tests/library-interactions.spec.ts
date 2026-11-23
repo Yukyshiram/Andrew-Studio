@@ -222,15 +222,18 @@ test.describe("Navegación táctil", () => {
       .getByRole("button", { name: /Lucía · Lectora/ })
       .tap();
     await expect(page.getByRole("dialog")).not.toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Cambiar perfil ficticio: Lucía" }),
+    ).toBeVisible();
     await page
       .getByRole("link", {
         name: "Ver La arquitectura del silencio",
         exact: true,
       })
       .tap();
-    await page
-      .getByRole("button", { name: "Abrir portada", exact: true })
-      .tap();
+    await expect(
+      page.getByRole("button", { name: /^(Abrir|Cerrar) portada$/ }),
+    ).toHaveCount(0);
     await expect(page.locator(".physical-cover")).toHaveCSS(
       "transform",
       "none",

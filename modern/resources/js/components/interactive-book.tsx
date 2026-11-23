@@ -1,7 +1,4 @@
-import { useState } from "react";
-import { RotateCcw, BookOpen } from "lucide-react";
 import { BookCover } from "./book-cover";
-import { Button } from "./ui";
 import type { Book } from "../types";
 
 /** La cubierta es decorativa; la ficha accesible permanece siempre visible. */
@@ -12,11 +9,10 @@ export function InteractiveBook({
     book: Book;
     transitionName?: string;
 }) {
-    const [open, setOpen] = useState(false);
     return (
         <div className="interactive-book-stage">
             <div
-                className={`physical-book ${open ? "is-open" : ""}`}
+                className="physical-book"
                 style={{ viewTransitionName: transitionName }}
                 aria-hidden="true"
             >
@@ -34,15 +30,6 @@ export function InteractiveBook({
                 </div>
                 <div className="physical-spine" />
             </div>
-            <Button
-                variant="ghost"
-                className="book-open-control"
-                onClick={() => setOpen(!open)}
-                aria-pressed={open}
-            >
-                {open ? <RotateCcw size={16} /> : <BookOpen size={16} />}
-                {open ? "Cerrar portada" : "Abrir portada"}
-            </Button>
         </div>
     );
 }

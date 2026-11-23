@@ -139,12 +139,10 @@ test("visitante: inicio, catálogo, búsqueda, filtros, ficha, acerca y ausencia
   await expect(page.getByRole("tabpanel")).toContainText(
     "Reflexiones sobre cómo decidir",
   );
-  await page
-    .getByRole("button", { name: "Abrir portada", exact: true })
-    .click();
   await expect(
-    page.getByRole("button", { name: "Cerrar portada", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
+    page.getByRole("button", { name: /^(Abrir|Cerrar) portada$/ }),
+  ).toHaveCount(0);
+  await expect(page.locator(".physical-cover")).toBeVisible();
   await page.getByRole("tab", { name: "Datos bibliográficos" }).click();
   await expect(page.getByRole("tabpanel")).toContainText("2021");
   await page.getByRole("button", { name: "Volver a la colección" }).click();
@@ -614,9 +612,9 @@ test("reduced-motion, sin View Transitions ni dependencias WebGL y estado vacío
   await page.getByRole("searchbox").fill("geometria");
   await expect(page.locator(".book-card")).toHaveCount(1);
   await page.locator(".book-card-cover").click();
-  await page
-    .getByRole("button", { name: "Abrir portada", exact: true })
-    .click();
+  await expect(
+    page.getByRole("button", { name: /^(Abrir|Cerrar) portada$/ }),
+  ).toHaveCount(0);
   expect(
     await page
       .locator(".physical-cover")
